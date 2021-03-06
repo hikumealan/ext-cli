@@ -40,7 +40,7 @@
     "version": "node . --version",
     "version:node": "node --version",
     "version:npm": "npm --version",
-    "version:npx": "npx --version",
+    "version:npx": "npx -- npm --version",
     "version:angular": "npx @angular/cli --version",
     "version:react": "npx create-react-app --version",
     "version:vue": "npx @vue/cli --version",

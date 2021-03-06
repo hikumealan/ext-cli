@@ -175,31 +175,36 @@ event.on('get-project-options', (req, next) => {
             switch (key) {
                 case '--use-template':
                     if (value) {
-                        const repo = req.env.repo;
-                        const script = (scripts[`npx:template:list`] || '').replace(/\$npm_config_cli/g, repo);
-                        const results = execSync(`${script}`).toString();
-                        console.log('results');
-                        console.log(JSON.parse(results));
-                        // const temp = `${template}-${value.toLowerCase()}`;
-                        // const location = path.join(__dirname, `../template/`);
-                        // // TODO: check the templates remotely
-                        // if (fs.existsSync(location)) {
-                        //     const temps = fs.readdirSync(location).map((file) => {
-                        //         return path.join(location, file);
-                        //     }).filter((loc) => {
-                        //         return fs.statSync(loc).isDirectory();
-                        //     });
-                        //     temps.forEach((item, index) => {
-                        //         temps[index] = item.replace(location, '');
-                        //     });
-                        //     if (temps.includes(temp)) {
-                        //         req.input.template = temp;
-                        //     } else {
-                        //         log(`Template '${value}' not found.`, 'error')
-                        //     }
-                        // } else {
-                        //     log(`Templates not found.`, 'error')
-                        // }
+                        const temp = `${template}-${value.toLowerCase()}`;
+                        try {
+                            const script = (scripts[`npx:template:list`] || '').replace(/\$npm_config_cli/g, req.env.repo);
+                            const results = execSync(`${script}`).toString();
+                            const {data} = JSON.parse(results);
+                            if (data.includes(temp)) {
+                                req.input.template = temp;
+                            } else {
+                                log(`Template '${value}' not found.`, 'error')
+                            }
+                        } catch (e) {
+                            const location = path.join(__dirname, `../template/`);
+                            if (fs.existsSync(location)) {
+                                const temps = fs.readdirSync(location).map((file) => {
+                                    return path.join(location, file);
+                                }).filter((loc) => {
+                                    return fs.statSync(loc).isDirectory();
+                                });
+                                temps.forEach((item, index) => {
+                                    temps[index] = item.replace(location, '');
+                                });
+                                if (temps.includes(temp)) {
+                                    req.input.template = temp;
+                                } else {
+                                    log(`Template '${value}' not found.`, 'error')
+                                }
+                            } else {
+                                log(`Templates not found.`, 'error')
+                            }
+                        }
                     }
                     break;
                 case '--npmrc-token':
@@ -251,21 +256,43 @@ event.on('extend-project-setup', (req) => {
     const url = repository.url.replace('git+', '').replace('.git', '/');
     const template = req.input.template;
     const remote = resolve(url, path.join( 'tree/main/template', template));
-    const local = path.join(req.env.cwd, 'template', template);
-    if (fs.existsSync(local)) {
-        const files = readdirSyncRecursively(local);
-        files.forEach((file) => {
-            const directory = file.replace(`${local}/`, '').split('/');
-            const filename = directory.pop();
-            const dir = directory.join('/');
-            if (dir) {
-                fs.mkdirSync(dir, { recursive: true });
-            }
-            fs.writeFileSync(path.join(dir, filename === '_gitignore' ? '.gitignore' : filename), fs.readFileSync(file));
+
+    console.log('HERE!!');
+    try {
+        const script = (scripts[`npx:template:info`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template/g, template);
+        const results = execSync(`${script}`).toString();
+        const {data} = JSON.parse(results);
+        console.log(data);
+        data.forEach((file) => {
+            console.log(file);
+            const script = (scripts[`npx:template:get`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template_file/g, file);
+            const content = execSync(`${script}`).toString();
+            console.log(content);
+            // fs.writeFileSync(path.join(dir, filename === '_gitignore' ? '.gitignore' : filename), fs.readFileSync(content));
         });
-    } else {
-        console.log(new URL(remote));
+    } catch (e) {
+        console.error(e);
     }
+
+
+
+
+
+    // const local = path.join(req.env.cwd, 'template', template);
+    // if (fs.existsSync(local)) {
+    //     const files = readdirSyncRecursively(local);
+    //     files.forEach((file) => {
+    //         const directory = file.replace(`${local}/`, '').split('/');
+    //         const filename = directory.pop();
+    //         const dir = directory.join('/');
+    //         if (dir) {
+    //             fs.mkdirSync(dir, { recursive: true });
+    //         }
+    //         fs.writeFileSync(path.join(dir, filename === '_gitignore' ? '.gitignore' : filename), fs.readFileSync(file));
+    //     });
+    // } else {
+    //     console.log(new URL(remote));
+    // }
 });
 
 // =====================================================================================================================
