@@ -322,9 +322,9 @@ event.on('template-command-main', (req) => {
         }
     });
     if (results) {
-        console.log('####');
+        // console.log('####');
         console.log(JSON.stringify(results));
-        console.log('####');
+        // console.log('####');
     }
 });
 
