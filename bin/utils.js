@@ -2,7 +2,6 @@
 
 // DEPS
 const fs = require('fs');
-// const url = require('url');
 const path = require('path');
 const http = require('http');
 const https = require('https');
@@ -177,21 +176,6 @@ const readdirSyncRecursively = (location, results=[]) => {
     });
     return results;
 };
-// const readdirSyncRecursively = function(dirPath, arrayOfFiles) {
-//     var files = fs.readdirSync(dirPath)
-//
-//     arrayOfFiles = arrayOfFiles || []
-//
-//     files.forEach(function(file) {
-//         if (fs.statSync(dirPath + "/" + file).isDirectory()) {
-//             arrayOfFiles = readdirSyncRecursively(dirPath + "/" + file, arrayOfFiles)
-//         } else {
-//             arrayOfFiles.push(path.join(__dirname, dirPath, "/", file))
-//         }
-//     })
-//
-//     return arrayOfFiles
-// };
 const resolve = (from, to) => {
     const res = new URL(to, new URL(from, 'resolve://'));
     if (res.protocol === 'resolve:') {

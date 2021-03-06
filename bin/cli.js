@@ -36,11 +36,6 @@ event.on('request-main', (req) => {
         case 'generate':
             //
             break;
-        case 'template':
-            // template --list => array of the folders in the template directory
-            // template --info=${template} => list of all the files and folders in the template directory
-            event.emit('template-command-main', req);
-            break;
         default:
             log(`Command not found: '${cmd}'`, 'error');
             event.emit('request-prompt', req);
@@ -229,17 +224,12 @@ event.on('init-project-setup', (req, next) => {
 });
 event.on('extend-project-setup', (req) => {
     // PROJECT EXTEND
-    // const {repository} = req.packageJSON || {};
-    // const url = repository.url.replace('git+', '').replace('.git', '/');
-
-    // https://github.com/hikumealan/ext-cli.git
-    // https://github.com/hikumealan/ext-cli/tree/main/template/ext-angular-use-case/
-    // https://raw.githubusercontent.com/hikumealan/ext-cli/main/template/ext-angular-use-case/
-    const url = 'https://raw.githubusercontent.com/hikumealan/ext-cli/';
+    const {repository} = req.packageJSON || {};
+    const url = repository.url.replace('git+', '').replace('.git', '/');
     const template = req.input.template;
     const remote = resolve(url, path.join( 'tree/main/template', template));
     const local = path.join(req.env.cwd, 'template', template);
-    if (fs.existsSync(local) && false) {
+    if (fs.existsSync(local)) {
         const files = readdirSyncRecursively(local);
         files.forEach((file) => {
             const directory = file.replace(`${local}/`, '').split('/');
@@ -253,76 +243,6 @@ event.on('extend-project-setup', (req) => {
     } else {
         console.log(new URL(remote));
     }
-});
-
-
-// =====================================================================================================================
-// COMMAND - TEMPLATE
-event.on('template-command-main', (req) => {
-    let results = null;
-    let location = '';
-    const options = req.params || [];
-    console.log(options);
-    console.log(process.cwd());
-    console.log(__dirname);
-    console.log(__filename);
-    console.log(path.join(__dirname, '../template'));
-    // template --list => array of the folders in the template directory
-    // template --info=${template} => list of all the files and folders in the template directory
-    options.forEach((option) => {
-        const opt = option.split('=');
-        const key = opt.length ? (opt[0] || '').toLowerCase() : '';
-        const value = opt.length > 1 ? (opt[1] || '').toLowerCase() : '';
-        switch (key) {
-            case '--list':
-                location = path.join(__dirname, '../template');
-                if (fs.existsSync(location)) {
-                    results = fs.readdirSync(location).map((file) => {
-                        return path.join(location, file);
-                    }).filter((loc) => {
-                        return fs.statSync(loc).isDirectory();
-                    });
-                    results.forEach((item, index) => {
-                        results[index] = item.replace(`${location}/`, '');
-                    });
-                }
-                return;
-            case '--info':
-                location = path.join(__dirname, `../template/${value}`);
-                if (fs.existsSync(location)) {
-                    results = readdirSyncRecursively(path.join(__dirname, `../template/${value}`));
-                    results.forEach((item, index) => {
-                        // results[index] = item.replace(path.join(location, '../'), '');
-                        results[index] = item.replace(`${location}/`, '');
-                    });
-                }
-                return;
-            default:
-                //
-                break;
-        }
-    });
-    if (results) {
-        console.log('================================================================================================');
-        console.log(results);
-        console.log('================================================================================================');
-    } else {
-        //
-    }
-});
-event.on('template-command-prompt', (req) => {
-    const options = req.cmds.options;
-    const question = `Please provide a command you want to run. \nOptions: ${options.join(', ')} \n`;
-    prompt.question(question, (input) => {
-        prompt.close();
-        input = (input || '').toLowerCase();
-        if (input.length && options.includes(input)) {
-            req.input.cmd = input;
-            event.emit('request-main', req);
-        } else {
-            event.emit('request-prompt', req);
-        }
-    });
 });
 
 
@@ -343,7 +263,7 @@ const init = (packageJSON) => {
             options: [],
         },
         cmds: {
-            options: ['create', 'generate', 'template'],
+            options: ['create', 'generate'],
             create: ['velocity', 'angular', 'react', 'vue', 'angular-ionic', 'react-ionic', 'vue-ionic', 'ionic-angular'],
             generate: ['component']
         },
