@@ -177,11 +177,10 @@ event.on('get-project-options', (req, next) => {
                     if (value) {
                         const repo = req.env.repo;
                         const script = (scripts[`npx:template:list`] || '').replace(/\$npm_config_cli/g, repo);
-                        console.log('script');
-                        console.log(script);
-                        const results = execSync(`${script}`, {stdio: 'inherit'});
+                        const results = execSync(`${script}`).toString();
                         console.log('results');
                         console.log(results);
+                        console.log(results.split('####'));
                         // const temp = `${template}-${value.toLowerCase()}`;
                         // const location = path.join(__dirname, `../template/`);
                         // // TODO: check the templates remotely
@@ -276,11 +275,6 @@ event.on('template-command-main', (req) => {
     let results = null;
     let location = '';
     const options = req.params || [];
-    console.log(options);
-    console.log(process.cwd());
-    console.log(__dirname);
-    console.log(__filename);
-    console.log(path.join(__dirname, '../template'));
     // template --list => array of the folders in the template directory
     // template --info=${template} => list of all the files and folders in the template directory
     // template --get=${template_name}/${path_to_file}/${file_name} => returns the contents of the file requested
