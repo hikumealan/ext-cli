@@ -179,8 +179,7 @@ event.on('get-project-options', (req, next) => {
                         const script = (scripts[`npx:template:list`] || '').replace(/\$npm_config_cli/g, repo);
                         const results = execSync(`${script}`).toString();
                         console.log('results');
-                        console.log(results);
-                        console.log(results.split('####'));
+                        console.log(JSON.parse(results));
                         // const temp = `${template}-${value.toLowerCase()}`;
                         // const location = path.join(__dirname, `../template/`);
                         // // TODO: check the templates remotely
@@ -286,24 +285,26 @@ event.on('template-command-main', (req) => {
             case '--list':
                 location = path.join(__dirname, '../template');
                 if (fs.existsSync(location)) {
-                    results = fs.readdirSync(location).map((file) => {
+                    const data = fs.readdirSync(location).map((file) => {
                         return path.join(location, file);
                     }).filter((loc) => {
                         return fs.statSync(loc).isDirectory();
                     });
-                    results.forEach((item, index) => {
-                        results[index] = item.replace(`${location}/`, '');
+                    data.forEach((item, index) => {
+                        data[index] = item.replace(`${location}/`, '');
                     });
+                    results = {data};
                 }
                 return;
             case '--info':
                 location = path.join(__dirname, `../template/${value}`);
                 if (fs.existsSync(location)) {
-                    results = readdirSyncRecursively(path.join(__dirname, `../template/${value}`));
-                    results.forEach((item, index) => {
+                    const data = readdirSyncRecursively(path.join(__dirname, `../template/${value}`));
+                    data.forEach((item, index) => {
                         // results[index] = item.replace(path.join(location, '../'), '');
-                        results[index] = item.replace(`${location}/`, '');
+                        data[index] = item.replace(`${location}/`, '');
                     });
+                    results = {data};
                 }
                 return;
             case '--get':
@@ -312,7 +313,6 @@ event.on('template-command-main', (req) => {
                 if (fs.existsSync(location)) {
                     location = path.join(__dirname, `../template/${value}`);
                     const data = fs.readFileSync(location).toString();
-                    console.log('DATA:: ', data);
                     results = {data};
                 }
                 return;
