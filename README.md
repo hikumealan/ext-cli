@@ -15,6 +15,8 @@ Get all Templates: `npx https://github.com/hikumealan/ext-cli template --list`
 
 Get a list of all the files in a Template: `npx https://github.com/hikumealan/ext-cli template --info={template-name}`
 
+Get the contents of a requested file from a Template: `npx https://github.com/hikumealan/ext-cli template --get={template-name}/{path-to-file}/{file-name}`
+
 See `template` folders for more details
 
 ## Build and Test

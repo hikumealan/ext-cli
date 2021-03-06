@@ -30,11 +30,17 @@ event.on('request-main', (req) => {
     const cmd = req.input.cmd;
     switch (cmd) {
         case 'create':
-            // create ${framework} ${project_name} --use-case=disputes --npmrc-token=${token} --${framework_cli_options}
+            // create ${framework} ${project_name} --use-template=disputes --npmrc-token=${token} --${framework_cli_options}
             event.emit('create-project-main', req);
             break;
         case 'generate':
             //
+            break;
+        case 'template':
+            // template --list => array of the folders in the template directory
+            // template --info=${template} => list of all the files and folders in the template directory
+            // template --get=${template_name}/${path_to_file}/${file_name} => returns the contents of the file requested
+            event.emit('template-command-main', req);
             break;
         case '--help':
             //
@@ -155,6 +161,8 @@ event.on('get-project-name', (req, next) => {
 });
 event.on('get-project-options', (req, next) => {
     // PROJECT OPTS
+    // create ${framework} ${project_name} --use-template=disputes --npmrc-token=${token} --${framework_cli_options}
+    const {scripts} = req.packageJSON || {};
     const options = req.options;
     const template = req.input.template;
     if (options.length) {
@@ -167,25 +175,33 @@ event.on('get-project-options', (req, next) => {
             switch (key) {
                 case '--use-template':
                     if (value) {
-                        const temp = `${template}-${value.toLowerCase()}`;
-                        const location = path.join(__dirname, `../template/`);
-                        if (fs.existsSync(location)) {
-                            const temps = fs.readdirSync(location).map((file) => {
-                                return path.join(location, file);
-                            }).filter((loc) => {
-                                return fs.statSync(loc).isDirectory();
-                            });
-                            temps.forEach((item, index) => {
-                                temps[index] = item.replace(location, '');
-                            });
-                            if (temps.includes(temp)) {
-                                req.input.template = temp;
-                            } else {
-                                log(`Template '${value}' not found.`, 'error')
-                            }
-                        } else {
-                            log(`Templates not found.`, 'error')
-                        }
+                        const repo = req.env.repo;
+                        const script = (scripts[`npx:template:list`] || '').replace(/\$npm_config_cli/g, repo);
+                        console.log('script');
+                        console.log(script);
+                        const results = execSync(`${script}`, {stdio: 'inherit'});
+                        console.log('results');
+                        console.log(results);
+                        // const temp = `${template}-${value.toLowerCase()}`;
+                        // const location = path.join(__dirname, `../template/`);
+                        // // TODO: check the templates remotely
+                        // if (fs.existsSync(location)) {
+                        //     const temps = fs.readdirSync(location).map((file) => {
+                        //         return path.join(location, file);
+                        //     }).filter((loc) => {
+                        //         return fs.statSync(loc).isDirectory();
+                        //     });
+                        //     temps.forEach((item, index) => {
+                        //         temps[index] = item.replace(location, '');
+                        //     });
+                        //     if (temps.includes(temp)) {
+                        //         req.input.template = temp;
+                        //     } else {
+                        //         log(`Template '${value}' not found.`, 'error')
+                        //     }
+                        // } else {
+                        //     log(`Templates not found.`, 'error')
+                        // }
                     }
                     break;
                 case '--npmrc-token':
@@ -211,12 +227,12 @@ event.on('init-project-setup', (req, next) => {
     const token = req.input.token;
     const opts = req.input.options;
     // PROJECT PREP
-    const preScript = (scripts[`pre${cmd}:${framework}`] || '').replace('$npm_config_project', project);
+    const preScript = (scripts[`pre${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
     if (preScript) {
         execSync(`${preScript}`, {stdio: 'inherit'});
     }
     // PROJECT SETUP
-    const script = (scripts[`${cmd}:${framework}`] || '').replace('$npm_config_project', project);
+    const script = (scripts[`${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
     execSync(`${script}${(opts || []).length ? ' ' + opts.join(' ') : ''}`, {stdio: 'inherit'});
     // PROJECT FOLDER UPDATES
     process.chdir(`./${project}`);
@@ -225,7 +241,7 @@ event.on('init-project-setup', (req, next) => {
         fs.writeFileSync('.npmrc', npmrc(token));
     }
     // PROJECT COMPLETE
-    const postScript = (scripts[`post${cmd}:${framework}`] || '').replace('$npm_config_project', project);
+    const postScript = (scripts[`post${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
     if (postScript) {
         execSync(`${postScript}`, {stdio: 'inherit'});
     }
@@ -254,6 +270,70 @@ event.on('extend-project-setup', (req) => {
     }
 });
 
+// =====================================================================================================================
+// COMMAND - TEMPLATE
+event.on('template-command-main', (req) => {
+    let results = null;
+    let location = '';
+    const options = req.params || [];
+    console.log(options);
+    console.log(process.cwd());
+    console.log(__dirname);
+    console.log(__filename);
+    console.log(path.join(__dirname, '../template'));
+    // template --list => array of the folders in the template directory
+    // template --info=${template} => list of all the files and folders in the template directory
+    // template --get=${template_name}/${path_to_file}/${file_name} => returns the contents of the file requested
+    options.forEach((option) => {
+        const opt = option.split('=');
+        const key = opt.length ? (opt[0] || '').toLowerCase() : '';
+        const value = opt.length > 1 ? (opt[1] || '').toLowerCase() : '';
+        switch (key) {
+            case '--list':
+                location = path.join(__dirname, '../template');
+                if (fs.existsSync(location)) {
+                    results = fs.readdirSync(location).map((file) => {
+                        return path.join(location, file);
+                    }).filter((loc) => {
+                        return fs.statSync(loc).isDirectory();
+                    });
+                    results.forEach((item, index) => {
+                        results[index] = item.replace(`${location}/`, '');
+                    });
+                }
+                return;
+            case '--info':
+                location = path.join(__dirname, `../template/${value}`);
+                if (fs.existsSync(location)) {
+                    results = readdirSyncRecursively(path.join(__dirname, `../template/${value}`));
+                    results.forEach((item, index) => {
+                        // results[index] = item.replace(path.join(location, '../'), '');
+                        results[index] = item.replace(`${location}/`, '');
+                    });
+                }
+                return;
+            case '--get':
+                const file = value.split('/');
+                location = path.join(__dirname, `../template/${file[0]}`);
+                if (fs.existsSync(location)) {
+                    location = path.join(__dirname, `../template/${value}`);
+                    const data = fs.readFileSync(location).toString();
+                    console.log('DATA:: ', data);
+                    results = {data};
+                }
+                return;
+            default:
+                //
+                break;
+        }
+    });
+    if (results) {
+        console.log('####');
+        console.log(JSON.stringify(results));
+        console.log('####');
+    }
+});
+
 
 // =====================================================================================================================
 // EXPORTS
@@ -272,14 +352,15 @@ const init = (packageJSON) => {
             options: [],
         },
         cmds: {
-            options: ['create', 'generate', '--version', '--help'],
+            options: ['create', 'generate', 'template', '--version', '--help'],
             create: ['velocity', 'angular', 'react', 'vue', 'angular-ionic', 'react-ionic', 'vue-ionic', 'ionic-angular'],
             generate: ['component']
         },
         env: {
             cwd: process.cwd(),
             dir: __dirname,
-            loc: __filename
+            loc: __filename,
+            repo: (((packageJSON || {}).repository || {}).url || '').replace('git+', '').replace('.git', '/')
         },
         packageJSON
     });

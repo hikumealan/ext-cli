@@ -33,8 +33,9 @@
     "postcreate:vue-ionic": "npm i @nexus/core @nexus/vue vue-rx rxjs",
     "postcreate:ionic-angular": "npm i @nexus/core @nexus/angular @ngrx/store",
 
-    "template:list": "node . template --list",
-    "template:info": "node . template --info=$npm_config_template",
+    "npx:template:list": "npx $npm_config_cli template --list",
+    "npx:template:info": "npx $npm_config_cli template --info=$npm_config_template",
+    "npx:template:get": "npx $npm_config_cli template --get=$npm_config_template_file",
 
     "version": "node . --version",
     "version:node": "node --version",
