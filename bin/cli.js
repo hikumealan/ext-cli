@@ -36,6 +36,12 @@ event.on('request-main', (req) => {
         case 'generate':
             //
             break;
+        case '--help':
+            //
+            break;
+        case '--version':
+            console.log(req.packageJSON.version);
+            break;
         default:
             log(`Command not found: '${cmd}'`, 'error');
             event.emit('request-prompt', req);
@@ -191,6 +197,9 @@ event.on('get-project-options', (req, next) => {
             }
         });
     }
+    if (!req.input.token) {
+        // TODO: Do you want to provide a token? (Y || N)
+    }
     event.emit('create-project-main', req, next);
 });
 event.on('init-project-setup', (req, next) => {
@@ -263,7 +272,7 @@ const init = (packageJSON) => {
             options: [],
         },
         cmds: {
-            options: ['create', 'generate'],
+            options: ['create', 'generate', '--version', '--help'],
             create: ['velocity', 'angular', 'react', 'vue', 'angular-ionic', 'react-ionic', 'vue-ionic', 'ionic-angular'],
             generate: ['component']
         },

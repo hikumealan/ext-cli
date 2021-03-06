@@ -3,6 +3,13 @@
   "version": "1.0.0",
   "description": "Extend CLIs",
   "main": "index.js",
+  "bin": {
+    "ext-cli": "./index.js"
+  },
+  "engines": {
+    "node": ">=10.0.0 <15",
+    "npm": ">=5.2.0"
+  },
   "scripts": {
     "start": "NODE_ENV=production node .",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -27,11 +34,9 @@
     "postcreate:ionic-angular": "npm i @nexus/core @nexus/angular @ngrx/store",
 
     "template:list": "node . template --list",
-    "npx:template:list": "npx https://github.com/hikumealan/nex-cli template --list",
     "template:info": "node . template --info=$npm_config_template",
-    "npx:template:info": "npx https://github.com/hikumealan/nex-cli template --info=$npm_config_template",
 
-    "version": "echo \"1.0.0\"",
+    "version": "node . --version",
     "version:node": "node --version",
     "version:npm": "npm --version",
     "version:npx": "npx --version",
