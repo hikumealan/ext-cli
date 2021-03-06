@@ -1,0 +1,57 @@
+{
+  "name": "ext-cli",
+  "version": "1.0.0",
+  "description": "Extend CLIs",
+  "main": "index.js",
+  "scripts": {
+    "start": "NODE_ENV=production node .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+
+    "create:velocity": "mkdir $npm_config_project",
+    "create:angular": "npx @angular/cli new $npm_config_project --prefix=nexus --routing=true --interactive=false --skip-install=true --strict=true --verbose=true",
+    "create:react": "npx create-react-app $npm_config_project --template typescript --use-npm --skip-install --verbose",
+    "create:vue": "npx @vue/cli create $npm_config_project",
+    "create:angular-ionic": "npx @ionic/cli start $npm_config_project blank --type=angular --no-deps",
+    "create:react-ionic": "npx @ionic/cli start $npm_config_project blank --type=react --no-deps",
+    "create:vue-ionic": "npx @ionic/cli start $npm_config_project blank --type=vue --no-deps",
+    "create:ionic-angular": "npx @ionic/cli start $npm_config_project blank --type=ionic-angular --no-deps",
+
+    "postcreate:velocity": "npm init -y && git init",
+    "postcreate:angular": "npm i @nexus/core @nexus/angular @ngrx/store",
+    "postcreate:react": "npm i @nexus/core @nexus/react rxjs redux redux-observable",
+    "postcreate:react-redux": "npm i @nexus/core @nexus/react rxjs",
+    "postcreate:vue": "npm i @nexus/core @nexus/vue rxjs vue-rx",
+    "postcreate:angular-ionic": "npm i @nexus/core @nexus/angular @ngrx/store",
+    "postcreate:react-ionic": "npm i @nexus/core @nexus/react redux-observable",
+    "postcreate:vue-ionic": "npm i @nexus/core @nexus/vue vue-rx rxjs",
+    "postcreate:ionic-angular": "npm i @nexus/core @nexus/angular @ngrx/store",
+
+    "template:list": "node . template --list",
+    "npx:template:list": "npx https://github.com/hikumealan/nex-cli template --list",
+    "template:info": "node . template --info=$npm_config_template",
+    "npx:template:info": "npx https://github.com/hikumealan/nex-cli template --info=$npm_config_template",
+
+    "version": "echo \"1.0.0\"",
+    "version:node": "node --version",
+    "version:npm": "npm --version",
+    "version:npx": "npx --version",
+    "version:angular": "npx @angular/cli --version",
+    "version:react": "npx create-react-app --version",
+    "version:vue": "npx @vue/cli --version",
+    "version:ionic": "npx @ionic/cli --version"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hikumealan/ext-cli.git"
+  },
+  "keywords": [
+    "key",
+    "words"
+  ],
+  "author": "Bryan.A.Olson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hikumealan/ext-cli/issues"
+  },
+  "homepage": "https://github.com/hikumealan/ext-cli#readme"
+}
