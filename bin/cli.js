@@ -329,32 +329,51 @@ event.on('extend-project-setup', (req) => {
     const project = req.input.project;
     const template = req.input.template;
     try {
-        const script = (scripts[`npx:template:info`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template/g, template);
+        const script = (scripts[`npx:template:get`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template/g, template);
         const results = execSync(`${script}`).toString();
         const {data} = JSON.parse(results);
-        if (data.length < 50) {
-            log(`Cloning template files from ${template}:`);
-            data.forEach((file) => {
-                const directory = file.split('/');
-                const filename = directory.pop();
-                const dir = directory.join('/');
+        console.log(data);
+        data.forEach((file) => {
+            const keys = Object.keys(file);
+            console.log(keys);
+            keys.forEach((key) => {
+                const data = file[key];
+                const location = key.split('/');
+                const filename = location.pop();
+                const dir = location.join('/');
                 if (dir) {
                     fs.mkdirSync(dir, { recursive: true });
                 }
-                const script = (scripts[`npx:template:get`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template_file/g, `${template}/${file}`);
-                const content = execSync(`${script}`).toString();
-                const {data} = JSON.parse(content);
-                const location = path.join(dir, filename === '_gitignore' ? '.gitignore' : filename);
                 log(`Copying ${location}`);
                 fs.writeFileSync(location, data);
             });
-        } else {
-            // TODO: This will take too long
-            log(data);
-            const message = 'Too many files to copy remotely.';
-            log(message, 'error');
-            throw new Error(message);
-        }
+        });
+        // const script = (scripts[`npx:template:info`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template/g, template);
+        // const results = execSync(`${script}`).toString();
+        // const {data} = JSON.parse(results);
+        // if (data.length < 50) {
+        //     log(`Cloning template files from ${template}:`);
+        //     data.forEach((file) => {
+        //         const directory = file.split('/');
+        //         const filename = directory.pop();
+        //         const dir = directory.join('/');
+        //         if (dir) {
+        //             fs.mkdirSync(dir, { recursive: true });
+        //         }
+        //         const script = (scripts[`npx:template:get`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template_file/g, `${template}/${file}`);
+        //         const content = execSync(`${script}`).toString();
+        //         const {data} = JSON.parse(content);
+        //         const location = path.join(dir, filename === '_gitignore' ? '.gitignore' : filename);
+        //         log(`Copying ${location}`);
+        //         fs.writeFileSync(location, data);
+        //     });
+        // } else {
+        //     // TODO: This will take too long
+        //     log(data);
+        //     const message = 'Too many files to copy remotely.';
+        //     log(message, 'error');
+        //     throw new Error(message);
+        // }
     } catch (e) {
         const local = path.join(req.env.cwd, 'template', template);
         if (fs.existsSync(local)) {
@@ -414,13 +433,18 @@ event.on('template-command-main', (req) => {
                 }
                 return;
             case '--info':
-                location = path.join(__dirname, `../template/${value}`);
-                if (fs.existsSync(location)) {
-                    const data = readdirSyncRecursively(path.join(__dirname, `../template/${value}`));
-                    data.forEach((item, index) => {
-                        data[index] = item.replace(`${location}/`, '');
-                    });
-                    results = {data};
+                if (value) {
+                    location = path.join(__dirname, `../template/${value}`);
+                    if (fs.existsSync(location)) {
+                        const data = readdirSyncRecursively(path.join(__dirname, `../template/${value}`));
+                        data.forEach((file, index) => {
+                            const filename = file.replace(`${location}/`, '');
+                            data[index] = filename === '_gitignore' ? '.gitignore' : filename;
+                        });
+                        results = {data};
+                    }
+                } else {
+                    // TODO: Error
                 }
                 return;
             case '--get':
@@ -430,6 +454,26 @@ event.on('template-command-main', (req) => {
                     location = path.join(__dirname, `../template/${value}`);
                     const data = fs.readFileSync(location).toString();
                     results = {data};
+                }
+                return;
+            case '--get-all':
+                if (value) {
+                    location = path.join(__dirname, `../template/${value}`);
+                    if (fs.existsSync(location)) {
+                        const data = [];
+                        const files = readdirSyncRecursively(path.join(__dirname, `../template/${value}`));
+                        files.forEach((file, index) => {
+                            const obj = {};
+                            const filename = file.replace(`${location}/`, '');
+                            obj[filename === '_gitignore' ? '.gitignore' : filename] = fs.readFileSync(file).toString();
+                            data.push(obj);
+                        });
+                        results = {data};
+                    } else {
+                        // TODO: Error
+                    }
+                } else {
+                    // TODO: Error
                 }
                 return;
             default:
