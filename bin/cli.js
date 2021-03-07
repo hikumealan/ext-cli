@@ -329,11 +329,11 @@ event.on('extend-project-setup', (req) => {
     const project = req.input.project;
     const template = req.input.template;
     try {
-        log(`Cloning template files from ${template}:`);
+        log(`Cloning template files from ${template} - This may take a few minutes.`);
         const script = (scripts[`npx:template:get`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template/g, template);
         const results = execSync(`${script}`).toString();
         const {data} = JSON.parse(results);
-        log(`Copying ${data.length} file(s) - This may take a few minutes.`);
+        log(`Copying ${data.length} file(s):`);
         data.forEach((file) => {
             const keys = Object.keys(file);
             keys.forEach((key) => {
