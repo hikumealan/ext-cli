@@ -252,23 +252,27 @@ event.on('init-project-setup', (req, next) => {
 });
 event.on('extend-project-setup', (req) => {
     // PROJECT EXTEND
+    const {scripts} = req.packageJSON || {};
     const {repository} = req.packageJSON || {};
     const url = repository.url.replace('git+', '').replace('.git', '/');
     const template = req.input.template;
     const remote = resolve(url, path.join( 'tree/main/template', template));
-
-    console.log('HERE!!');
     try {
         const script = (scripts[`npx:template:info`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template/g, template);
         const results = execSync(`${script}`).toString();
         const {data} = JSON.parse(results);
-        console.log(data);
         data.forEach((file) => {
-            console.log(file);
+            const directory = file.split('/');
+            const filename = directory.pop();
+            const dir = directory.join('/');
+            if (dir) {
+                fs.mkdirSync(dir, { recursive: true });
+            }
             const script = (scripts[`npx:template:get`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template_file/g, file);
             const content = execSync(`${script}`).toString();
             console.log(content);
-            // fs.writeFileSync(path.join(dir, filename === '_gitignore' ? '.gitignore' : filename), fs.readFileSync(content));
+            const {data} = JSON.parse(content);
+            fs.writeFileSync(path.join(dir, filename === '_gitignore' ? '.gitignore' : filename), data);
         });
     } catch (e) {
         console.error(e);
@@ -340,7 +344,7 @@ event.on('template-command-main', (req) => {
                 if (fs.existsSync(location)) {
                     location = path.join(__dirname, `../template/${value}`);
                     const data = fs.readFileSync(location).toString();
-                    results = {data};
+                    results = {data: `${data}`};
                 }
                 return;
             default:
