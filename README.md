@@ -27,7 +27,7 @@ Frameworks: 'velocity', 'angular', 'react', 'vue', 'angular-ionic', 'react-ionic
   
 `npx https://github.com/hikumealan/ext-cli template --get={template-name}/{path-to-file}/{file-name}`
 
-See `template` folders for more details
+See `template` folders for more details on their contents
 
 ## Build and Test
 TODO: Describe and show how to build your code and run the tests. 
