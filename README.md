@@ -11,11 +11,21 @@ Frameworks: 'velocity', 'angular', 'react', 'vue', 'angular-ionic', 'react-ionic
 * Ionic wraps the `@ionic/cli`
 
 ## Template Command
-Get all Templates: `npx https://github.com/hikumealan/ext-cli template --list`
+* List all Templates: 
+  
+`npx https://github.com/hikumealan/ext-cli template --list`
 
-Get a list of all the files in a Template: `npx https://github.com/hikumealan/ext-cli template --info={template-name}`
+* List all files in a Template: 
+  
+`npx https://github.com/hikumealan/ext-cli template --info={template-name}`
 
-Get the contents of a requested file from a Template: `npx https://github.com/hikumealan/ext-cli template --get={template-name}/{path-to-file}/{file-name}`
+* Get all files in a Template: 
+  
+`npx https://github.com/hikumealan/ext-cli template --get-all={template-name}`
+
+* Get an individual file in a Template: 
+  
+`npx https://github.com/hikumealan/ext-cli template --get={template-name}/{path-to-file}/{file-name}`
 
 See `template` folders for more details
 
