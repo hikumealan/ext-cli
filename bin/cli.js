@@ -324,6 +324,9 @@ event.on('init-project-setup', (req, next) => {
 event.on('extend-project-setup', (req) => {
     // PROJECT EXTEND
     const {scripts} = req.packageJSON || {};
+    const cmd = req.input.cmd;
+    const framework = req.input.framework;
+    const project = req.input.project;
     const template = req.input.template;
     try {
         const script = (scripts[`npx:template:info`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template/g, template);
