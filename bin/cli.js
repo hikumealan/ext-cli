@@ -382,6 +382,7 @@ event.on('extend-project-setup', (req) => {
     if (postScript) {
         execSync(`${postScript}`, {stdio: 'inherit'});
     }
+    log(`SUCCESS:: Project was generated successfully!`);
 });
 
 // =====================================================================================================================
