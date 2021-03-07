@@ -58,7 +58,7 @@ event.on('request-prompt', (req) => {
     const options = req.cmds.options;
     const question = `Please provide a command you want to run. \nOptions: ${options.join(', ')} \n`;
     ask.question(question, (input) => {
-        input.close();
+        ask.close();
         input = (input || '').toLowerCase();
         if (input.length && options.includes(input)) {
             req.input.cmd = input;
@@ -87,7 +87,7 @@ event.on('create-project-main', (req, next) => {
             event.emit('create-project-main', req, next);
         } else {
             ask.question(question, (input) => {
-                input.close();
+                ask.close();
                 if (isValid(input)) {
                     event.emit('create-project-main', req, next);
                 } else {
@@ -184,7 +184,7 @@ event.on('get-project-framework', (req, next) => {
         event.emit('create-project-main', req, next);
     } else {
         ask.question(question, (input) => {
-            input.close();
+            ask.close();
             if (isValid(input)) {
                 event.emit('create-project-main', req, next);
             } else {
@@ -210,7 +210,7 @@ event.on('get-project-name', (req, next) => {
         event.emit('create-project-main', req, next);
     } else {
         ask.question(question, (input) => {
-            input.close();
+            ask.close();
             if (isValid(input)) {
                 event.emit('create-project-main', req, next);
             } else {
@@ -279,7 +279,7 @@ event.on('get-project-options', (req, next) => {
     if (!req.input.token) {
         // TODO: Do you want to provide a token? (Y || N)
         ask.question(`Do you want to provide a token?\n (Yes/No)\n`, (input) => {
-            input.close();
+            ask.close();
             input = (input || '').toLowerCase();
             if (input.indexOf('y') === 0) {
                 event.emit('create-project-main', req, 'get-project-token');
