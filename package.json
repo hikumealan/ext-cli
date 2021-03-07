@@ -35,7 +35,7 @@
 
     "npx:template:list": "npx $npm_config_cli template --list",
     "npx:template:info": "npx $npm_config_cli template --info=$npm_config_template",
-    "npx:template:get": "npx $npm_config_cli template --get=$npm_config_template",
+    "npx:template:get": "npx $npm_config_cli template --get-all=$npm_config_template",
     "npx:template:getFile": "npx $npm_config_cli template --get=$npm_config_template_file",
 
     "version": "node . --version",
