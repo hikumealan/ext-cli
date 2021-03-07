@@ -329,9 +329,7 @@ event.on('extend-project-setup', (req) => {
         const script = (scripts[`npx:template:info`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template/g, template);
         const results = execSync(`${script}`).toString();
         const {data} = JSON.parse(results);
-        console.log(data);
-        console.log(data.length);
-        if (data.length > 100) {
+        if (data.length < 50) {
             log(`Cloning template files from ${template}:`);
             data.forEach((file) => {
                 const directory = file.split('/');
@@ -349,6 +347,7 @@ event.on('extend-project-setup', (req) => {
             });
         } else {
             // TODO: This will take too long
+            log(data);
             const message = 'Too many files to copy remotely.';
             log(message, 'error');
             throw new Error(message);
