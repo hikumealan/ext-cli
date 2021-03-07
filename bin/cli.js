@@ -278,7 +278,7 @@ event.on('get-project-options', (req, next) => {
     }
     if (!req.input.token) {
         // TODO: Do you want to provide a token? (Y || N)
-        ask.question(`Do you want to provide a token?\n (Yes/No)\n`, (input) => {
+        ask.question(`Do you want to provide a token? (Yes/No)\n`, (input) => {
             ask.close();
             input = (input || '').toLowerCase();
             if (input.indexOf('y') === 0) {
