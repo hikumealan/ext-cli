@@ -46,7 +46,7 @@ event.on('request-main', (req) => {
             //
             break;
         case '--version':
-            console.log(req.packageJSON.version);
+            log(req.packageJSON.version);
             break;
         default:
             log(`Command not found: '${cmd}'`, 'error');
@@ -81,17 +81,77 @@ event.on('', (type) => {
 // =====================================================================================================================
 // COMMAND - CREATE
 event.on('create-project-main', (req, next) => {
-    // TODO: Review and validate all values and jump to the correct step
+    const prompt = (value, question, validator, next) =>{
+        const isValid = validator;
+        if (isValid(value)) {
+            event.emit('create-project-main', req, next);
+        } else {
+            ask.question(question, (input) => {
+                input.close();
+                if (isValid(input)) {
+                    event.emit('create-project-main', req, next);
+                } else {
+                    prompt('', question, validator, next);
+                }
+            });
+        }
+    };
     next = typeof next === 'string' ? next : '';
     switch (next) {
         case 'get-project-framework':
-            event.emit('get-project-framework', req, 'get-project-name');
+            const options = req.cmds[req.input.cmd] || [];
+            prompt(
+                req.input.framework,
+                `Please provide the framework you want to use. \nOptions: ${options.join(', ')} \n`,
+                (input) => {
+                    input = (input || '').toLowerCase();
+                    if (input.length && options.includes(input)) {
+                        req.input.framework = input;
+                        req.input.template = `ext-${input}`;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                },
+                'get-project-name'
+            );
+            // event.emit('get-project-framework', req, 'get-project-name');
             break;
         case 'get-project-name':
-            event.emit('get-project-name', req, 'get-project-options');
+            prompt(
+                req.input.project,
+                `Please provide a project name. \n`,
+                (input) => {
+                    input = (input || '').toLowerCase();
+                    if (input.length) {
+                        req.input.project = input;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                },
+                'get-project-options'
+            );
+            // event.emit('get-project-name', req, 'get-project-options');
             break;
         case 'get-project-options':
             event.emit('get-project-options', req, 'init-project-setup');
+            break;
+        case 'get-project-token':
+            prompt(
+                req.input.token,
+                `Please provide a npmrc token. \n`,
+                (input) => {
+                    if (input.length) {
+                        req.input.token = input;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                },
+                'init-project-setup'
+            );
+            // event.emit('get-project-token', req, 'init-project-setup');
             break;
         case 'init-project-setup':
             event.emit('init-project-setup', req, 'extend-project-setup');
@@ -218,8 +278,18 @@ event.on('get-project-options', (req, next) => {
     }
     if (!req.input.token) {
         // TODO: Do you want to provide a token? (Y || N)
+        ask.question(`Do you want to provide a token?\n (Yes/No)\n`, (input) => {
+            input.close();
+            input = (input || '').toLowerCase();
+            if (input.indexOf('y') === 0) {
+                event.emit('create-project-main', req, 'get-project-token');
+            } else {
+                event.emit('create-project-main', req, next);
+            }
+        });
+    } else {
+        event.emit('create-project-main', req, next);
     }
-    event.emit('create-project-main', req, next);
 });
 event.on('init-project-setup', (req, next) => {
     // PROJECT INIT
@@ -239,15 +309,16 @@ event.on('init-project-setup', (req, next) => {
     execSync(`${script}${(opts || []).length ? ' ' + opts.join(' ') : ''}`, {stdio: 'inherit'});
     // PROJECT FOLDER UPDATES
     process.chdir(`./${project}`);
-    if (framework !== 'velocity') {
+    if (token) {
         // Add .npmrc
-        fs.writeFileSync('.npmrc', npmrc(token));
+        fs.writeFileSync('.npmrc', npmrc(null, null, token));
     }
-    // PROJECT COMPLETE
-    const postScript = (scripts[`post${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
-    if (postScript) {
-        execSync(`${postScript}`, {stdio: 'inherit'});
-    }
+    // TODO: Decide when is the best time to run this
+    // // PROJECT COMPLETE
+    // const postScript = (scripts[`post${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
+    // if (postScript) {
+    //     execSync(`${postScript}`, {stdio: 'inherit'});
+    // }
     event.emit('create-project-main', req, next);
 });
 event.on('extend-project-setup', (req) => {
@@ -258,19 +329,28 @@ event.on('extend-project-setup', (req) => {
         const script = (scripts[`npx:template:info`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template/g, template);
         const results = execSync(`${script}`).toString();
         const {data} = JSON.parse(results);
-        console.log(data);
-        data.forEach((file) => {
-            const directory = file.split('/');
-            const filename = directory.pop();
-            const dir = directory.join('/');
-            if (dir) {
-                fs.mkdirSync(dir, { recursive: true });
-            }
-            const script = (scripts[`npx:template:get`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template_file/g, `${template}/${file}`);
-            const content = execSync(`${script}`).toString();
-            const {data} = JSON.parse(content);
-            fs.writeFileSync(path.join(dir, filename === '_gitignore' ? '.gitignore' : filename), data);
-        });
+        if (data.length > 50) {
+            log(`Cloning template files from ${template}:`);
+            data.forEach((file) => {
+                const directory = file.split('/');
+                const filename = directory.pop();
+                const dir = directory.join('/');
+                if (dir) {
+                    fs.mkdirSync(dir, { recursive: true });
+                }
+                const script = (scripts[`npx:template:get`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template_file/g, `${template}/${file}`);
+                const content = execSync(`${script}`).toString();
+                const {data} = JSON.parse(content);
+                const location = path.join(dir, filename === '_gitignore' ? '.gitignore' : filename);
+                log(`Copying ${location}`);
+                fs.writeFileSync(location, data);
+            });
+        } else {
+            // TODO: This will take too long
+            const message = 'Too many files to copy remotely.';
+            log(message, 'error');
+            throw new Error(message);
+        }
     } catch (e) {
         const local = path.join(req.env.cwd, 'template', template);
         if (fs.existsSync(local)) {
@@ -282,11 +362,21 @@ event.on('extend-project-setup', (req) => {
                 if (dir) {
                     fs.mkdirSync(dir, { recursive: true });
                 }
-                fs.writeFileSync(path.join(dir, filename === '_gitignore' ? '.gitignore' : filename), fs.readFileSync(file));
+                const location = path.join(dir, filename === '_gitignore' ? '.gitignore' : filename);
+                fs.writeFileSync(location, fs.readFileSync(file));
             });
         } else {
-            //
+            // TODO: ?
+            const message = 'Local files not found.';
+            log(message, 'error');
+            throw new Error(message);
         }
+    }
+    // TODO: Decide when is the best time to run this
+    // PROJECT COMPLETE
+    const postScript = (scripts[`post${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
+    if (postScript) {
+        execSync(`${postScript}`, {stdio: 'inherit'});
     }
 });
 
@@ -343,8 +433,9 @@ event.on('template-command-main', (req) => {
         }
     });
     if (results) {
+        // TODO: wrap in tokens for parsing
         // console.log('####');
-        console.log(JSON.stringify(results));
+        log(JSON.stringify(results));
         // console.log('####');
     }
 });

@@ -150,20 +150,20 @@ const log = (message, type) => {
             break;
     }
 };
-const npmrc = (token) => {
+const npmrc = (user='fso-to', id='7bc545d8-bf8c-477e-bb91-17a982c30c2e', token, email) => {
     token = typeof token === 'string' ? token : '';
     return `registry=https://registry.npmjs.org/
-@nexus:registry=https://fso-to.pkgs.visualstudio.com/7bc545d8-bf8c-477e-bb91-17a982c30c2e/_packaging/Nexus/npm/registry/
+@nexus:registry=https://$npm_config_username.pkgs.visualstudio.com/$npm_config_id/_packaging/Nexus/npm/registry/
 always-auth=true
 save-exact=true
 ; begin auth token
-//fso-to.pkgs.visualstudio.com/7bc545d8-bf8c-477e-bb91-17a982c30c2e/_packaging/Nexus/npm/registry/:username=fso-to
-//fso-to.pkgs.visualstudio.com/7bc545d8-bf8c-477e-bb91-17a982c30c2e/_packaging/Nexus/npm/registry/:_password=[$npm_config_password]
-//fso-to.pkgs.visualstudio.com/7bc545d8-bf8c-477e-bb91-17a982c30c2e/_packaging/Nexus/npm/registry/:email=npm requires email to be set but doesn't use the value
-//fso-to.pkgs.visualstudio.com/7bc545d8-bf8c-477e-bb91-17a982c30c2e/_packaging/Nexus/npm/:username=fso-to
-//fso-to.pkgs.visualstudio.com/7bc545d8-bf8c-477e-bb91-17a982c30c2e/_packaging/Nexus/npm/:_password=[$npm_config_password]
-//fso-to.pkgs.visualstudio.com/7bc545d8-bf8c-477e-bb91-17a982c30c2e/_packaging/Nexus/npm/:email=npm requires email to be set but doesn't use the value
-; end auth token`.replace(/\$npm_config_password/g, token);
+//$npm_config_username.pkgs.visualstudio.com/$npm_config_id/_packaging/Nexus/npm/registry/:username=$npm_config_username
+//$npm_config_username.pkgs.visualstudio.com/$npm_config_id/_packaging/Nexus/npm/registry/:_password=[$npm_config_password]
+//$npm_config_username.pkgs.visualstudio.com/$npm_config_id/_packaging/Nexus/npm/registry/:email=$npm_config_email
+//$npm_config_username.pkgs.visualstudio.com/$npm_config_id/_packaging/Nexus/npm/:username=$npm_config_username
+//$npm_config_username.pkgs.visualstudio.com/$npm_config_id/_packaging/Nexus/npm/:_password=[$npm_config_password]
+//$npm_config_username.pkgs.visualstudio.com/$npm_config_id/_packaging/Nexus/npm/:email=$npm_config_email
+; end auth token`.replace(/\$npm_config_username/g, user).replace(/\$npm_config_id/g, id).replace(/\$npm_config_password/g, token).replace(/\$$npm_config_email/g, email);
 };
 const readdirSyncRecursively = (location, results=[]) => {
     const files = fs.existsSync(location) ? fs.readdirSync(location) : [];
