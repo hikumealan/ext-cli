@@ -329,7 +329,7 @@ event.on('extend-project-setup', (req) => {
         const script = (scripts[`npx:template:info`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template/g, template);
         const results = execSync(`${script}`).toString();
         const {data} = JSON.parse(results);
-        if (data.length > 50) {
+        if (data.length > 100) {
             log(`Cloning template files from ${template}:`);
             data.forEach((file) => {
                 const directory = file.split('/');
