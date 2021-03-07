@@ -329,23 +329,23 @@ event.on('extend-project-setup', (req) => {
     const project = req.input.project;
     const template = req.input.template;
     try {
+        log(`Cloning template files from ${template}:`);
         const script = (scripts[`npx:template:get`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template/g, template);
         const results = execSync(`${script}`).toString();
         const {data} = JSON.parse(results);
-        console.log(data);
+        log(`Copying ${data.length} file(s) - This may take a few minutes.`);
         data.forEach((file) => {
             const keys = Object.keys(file);
-            console.log(keys);
             keys.forEach((key) => {
                 const data = file[key];
                 const location = key.split('/');
                 const filename = location.pop();
-                const dir = location.join('/');
-                if (dir) {
-                    fs.mkdirSync(dir, { recursive: true });
+                const directory = location.join('/');
+                if (directory) {
+                    fs.mkdirSync(directory, { recursive: true });
                 }
-                log(`Copying ${location}`);
-                fs.writeFileSync(location, data);
+                log(`Writing ${key}`);
+                fs.writeFileSync(key, data);
             });
         });
         // const script = (scripts[`npx:template:info`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template/g, template);
@@ -430,6 +430,8 @@ event.on('template-command-main', (req) => {
                         data[index] = item.replace(`${location}/`, '');
                     });
                     results = {data};
+                } else {
+                    // TODO: Error
                 }
                 return;
             case '--info':
@@ -442,18 +444,27 @@ event.on('template-command-main', (req) => {
                             data[index] = filename === '_gitignore' ? '.gitignore' : filename;
                         });
                         results = {data};
+                    } else {
+                        // TODO: Error
                     }
                 } else {
                     // TODO: Error
                 }
                 return;
             case '--get':
-                const file = value.split('/');
-                location = path.join(__dirname, `../template/${file[0]}`);
-                if (fs.existsSync(location)) {
-                    location = path.join(__dirname, `../template/${value}`);
-                    const data = fs.readFileSync(location).toString();
-                    results = {data};
+                const file = value.split('/') || [];
+                if (file.length) {
+                    const directory = path.join(__dirname, `../template/${file[0]}`);
+                    if (fs.existsSync(directory)) {
+                        const filename = file.pop();
+                        location = path.join(directory, filename === '.gitignore' ? '_gitignore' : filename);
+                        const data = fs.readFileSync(location).toString();
+                        results = {data};
+                    } else {
+                        // TODO: Error
+                    }
+                } else {
+                    // TODO: Error
                 }
                 return;
             case '--get-all':
