@@ -84,6 +84,26 @@ const readline = require('readline');
 // }
 
 // EXPORTS
+const ask = {
+    cli: null,
+    question: function (question, callback) {
+        if (typeof (this.cli || {}).question === 'function') {
+            this.cli.question(question, callback);
+        } else {
+            this.cli = readline.createInterface({
+                input: process.stdin,
+                output: process.stdout
+            });
+            this.cli.question(question, callback);
+        }
+    },
+    close: function () {
+        if (typeof (this.cli || {}).close === 'function') {
+            this.cli.close();
+        }
+        this.cli = null;
+    }
+};
 const download = (url, des, cb) => {
     const src = new URL(url);
     const file = fs.createWriteStream(des);
@@ -145,26 +165,6 @@ save-exact=true
 //fso-to.pkgs.visualstudio.com/7bc545d8-bf8c-477e-bb91-17a982c30c2e/_packaging/Nexus/npm/:email=npm requires email to be set but doesn't use the value
 ; end auth token`.replace(/\$npm_config_password/g, token);
 };
-const prompt = {
-    cli: null,
-    question: function (question, callback) {
-        if (typeof (this.cli || {}).question === 'function') {
-            this.cli.question(question, callback);
-        } else {
-            this.cli = readline.createInterface({
-                input: process.stdin,
-                output: process.stdout
-            });
-            this.cli.question(question, callback);
-        }
-    },
-    close: function () {
-        if (typeof (this.cli || {}).close === 'function') {
-            this.cli.close();
-        }
-        this.cli = null;
-    }
-};
 const readdirSyncRecursively = (location, results=[]) => {
     const files = fs.existsSync(location) ? fs.readdirSync(location) : [];
     files.forEach((file) => {
@@ -186,10 +186,10 @@ const resolve = (from, to) => {
     return res.toString();
 };
 module.exports = {
+    ask,
     download,
     log,
     npmrc,
-    prompt,
     readdirSyncRecursively,
     resolve
 };

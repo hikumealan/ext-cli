@@ -7,10 +7,10 @@ const events = require('events');
 const {execSync} = require('child_process');
 // IMPORTS
 const {
+    ask,
     download,
     log,
     npmrc,
-    prompt,
     readdirSyncRecursively,
     resolve
 } = require('./utils');
@@ -57,8 +57,8 @@ event.on('request-main', (req) => {
 event.on('request-prompt', (req) => {
     const options = req.cmds.options;
     const question = `Please provide a command you want to run. \nOptions: ${options.join(', ')} \n`;
-    prompt.question(question, (input) => {
-        prompt.close();
+    ask.question(question, (input) => {
+        input.close();
         input = (input || '').toLowerCase();
         if (input.length && options.includes(input)) {
             req.input.cmd = input;
@@ -123,8 +123,8 @@ event.on('get-project-framework', (req, next) => {
     if (isValid(framework)) {
         event.emit('create-project-main', req, next);
     } else {
-        prompt.question(question, (input) => {
-            prompt.close();
+        ask.question(question, (input) => {
+            input.close();
             if (isValid(input)) {
                 event.emit('create-project-main', req, next);
             } else {
@@ -149,8 +149,8 @@ event.on('get-project-name', (req, next) => {
     if (isValid(project)) {
         event.emit('create-project-main', req, next);
     } else {
-        prompt.question(question, (input) => {
-            prompt.close();
+        ask.question(question, (input) => {
+            input.close();
             if (isValid(input)) {
                 event.emit('create-project-main', req, next);
             } else {
@@ -183,7 +183,7 @@ event.on('get-project-options', (req, next) => {
                             if (data.includes(temp)) {
                                 req.input.template = temp;
                             } else {
-                                log(`Template '${value}' not found.`, 'error')
+                                log(`Template '${value}' not found.`, 'error');
                             }
                         } catch (e) {
                             const location = path.join(__dirname, `../template/`);
@@ -199,10 +199,10 @@ event.on('get-project-options', (req, next) => {
                                 if (temps.includes(temp)) {
                                     req.input.template = temp;
                                 } else {
-                                    log(`Template '${value}' not found.`, 'error')
+                                    log(`Template '${value}' not found.`, 'error');
                                 }
                             } else {
-                                log(`Templates not found.`, 'error')
+                                log(`Templates not found.`, 'error');
                             }
                         }
                     }
@@ -253,10 +253,7 @@ event.on('init-project-setup', (req, next) => {
 event.on('extend-project-setup', (req) => {
     // PROJECT EXTEND
     const {scripts} = req.packageJSON || {};
-    const {repository} = req.packageJSON || {};
-    const url = repository.url.replace('git+', '').replace('.git', '/');
     const template = req.input.template;
-    const remote = resolve(url, path.join( 'tree/main/template', template));
     try {
         const script = (scripts[`npx:template:info`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template/g, template);
         const results = execSync(`${script}`).toString();
@@ -268,35 +265,28 @@ event.on('extend-project-setup', (req) => {
             if (dir) {
                 fs.mkdirSync(dir, { recursive: true });
             }
-            const script = (scripts[`npx:template:get`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template_file/g, file);
+            const script = (scripts[`npx:template:get`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template_file/g, `${template}/${file}`);
             const content = execSync(`${script}`).toString();
-            console.log(content);
             const {data} = JSON.parse(content);
             fs.writeFileSync(path.join(dir, filename === '_gitignore' ? '.gitignore' : filename), data);
         });
     } catch (e) {
-        console.error(e);
+        const local = path.join(req.env.cwd, 'template', template);
+        if (fs.existsSync(local)) {
+            const files = readdirSyncRecursively(local);
+            files.forEach((file) => {
+                const directory = file.replace(`${local}/`, '').split('/');
+                const filename = directory.pop();
+                const dir = directory.join('/');
+                if (dir) {
+                    fs.mkdirSync(dir, { recursive: true });
+                }
+                fs.writeFileSync(path.join(dir, filename === '_gitignore' ? '.gitignore' : filename), fs.readFileSync(file));
+            });
+        } else {
+            //
+        }
     }
-
-
-
-
-
-    // const local = path.join(req.env.cwd, 'template', template);
-    // if (fs.existsSync(local)) {
-    //     const files = readdirSyncRecursively(local);
-    //     files.forEach((file) => {
-    //         const directory = file.replace(`${local}/`, '').split('/');
-    //         const filename = directory.pop();
-    //         const dir = directory.join('/');
-    //         if (dir) {
-    //             fs.mkdirSync(dir, { recursive: true });
-    //         }
-    //         fs.writeFileSync(path.join(dir, filename === '_gitignore' ? '.gitignore' : filename), fs.readFileSync(file));
-    //     });
-    // } else {
-    //     console.log(new URL(remote));
-    // }
 });
 
 // =====================================================================================================================
@@ -332,7 +322,6 @@ event.on('template-command-main', (req) => {
                 if (fs.existsSync(location)) {
                     const data = readdirSyncRecursively(path.join(__dirname, `../template/${value}`));
                     data.forEach((item, index) => {
-                        // results[index] = item.replace(path.join(location, '../'), '');
                         data[index] = item.replace(`${location}/`, '');
                     });
                     results = {data};
@@ -344,7 +333,7 @@ event.on('template-command-main', (req) => {
                 if (fs.existsSync(location)) {
                     location = path.join(__dirname, `../template/${value}`);
                     const data = fs.readFileSync(location).toString();
-                    results = {data: `${data}`};
+                    results = {data};
                 }
                 return;
             default:
