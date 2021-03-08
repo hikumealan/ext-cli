@@ -59,5 +59,8 @@
   "bugs": {
     "url": "https://github.com/hikumealan/ext-cli/issues"
   },
-  "homepage": "https://github.com/hikumealan/ext-cli#readme"
+  "homepage": "https://github.com/hikumealan/ext-cli#readme",
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
 }

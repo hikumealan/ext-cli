@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const {execSync} = require('child_process');
+const _ = require('lodash');
 // IMPORTS
 const {
     ask,
@@ -205,6 +206,7 @@ const projectSetup = (req, next) => {
             const data = npmrc(undefined, undefined, token);
             fs.writeFileSync('.npmrc', data);
         }
+        req.input.packageJSON = JSON.parse(fs.readFileSync('package.json').toString());
     }
     main(req, next);
 };
@@ -233,37 +235,9 @@ const projectComplete = (req) => {
                 }
                 log(`Writing ${key}`);
                 if (filename === 'package.json' && req.input.packageJSON) {
-                    if (fs.existsSync(filename)) {
-                        fs.writeFileSync('package-backup.json', fs.readFileSync(filename));
-                    }
-                    // Merge the package.json files
-                    // input = {
-                    //     "name": "ext-demo-app",
-                    //     "version": "1.0.0",
-                    //     "description": "",
-                    //     "main": "index.js",
-                    //     "scripts": {
-                    //         "test": "echo \"Error: no test specified\" && exit 1"
-                    //     },
-                    //     "keywords": [],
-                    //     "author": "",
-                    //     "license": "ISC"
-                    // }
-                    const merges = ['name', 'version', 'description', 'keywords', 'author', 'license'];
                     const packageJSON = JSON.parse(data);
-                    merges.forEach((merge) => {
-                        packageJSON[`${merge}`] = req.input.packageJSON[`${merge}`];
-                    });
-                    // Work around fix for content reverting back merge changes
-                    const merged = JSON.stringify(packageJSON);
-                    log('');
-                    log('');
-                    log(merged);
-                    log(JSON.parse(merged));
-                    log('');
-                    log('');
-                    fs.writeFileSync(key, JSON.parse(merged));
-                    console.log('####################################################################################');
+                    const merged = _.merge(packageJSON, req.input.packageJSON);
+                    fs.writeFileSync(key, JSON.stringify(merged, null, 2));
                 } else {
                     fs.writeFileSync(key, data);
                 }
@@ -297,27 +271,26 @@ const projectComplete = (req) => {
         //     throw new Error(message);
         // }
     } catch (e) {
-        throw e;
-        // const local = path.join(req.env.cwd, 'template', template);
-        // if (fs.existsSync(local)) {
-        //     const files = readdirSyncRecursively(local);
-        //     files.forEach((file) => {
-        //         const directory = file.replace(`${local}/`, '').split('/');
-        //         const filename = directory.pop();
-        //         const dir = directory.join('/');
-        //         if (dir) {
-        //             fs.mkdirSync(dir, { recursive: true });
-        //         }
-        //         const location = path.join(dir, filename === '_gitignore' ? '.gitignore' : filename);
-        //         const data = fs.readFileSync(file);
-        //         fs.writeFileSync(location, data);
-        //     });
-        // } else {
-        //     // TODO: ?
-        //     const message = 'Local files not found.';
-        //     log(message, 'error');
-        //     throw new Error(message);
-        // }
+        const local = path.join(req.env.cwd, 'template', template);
+        if (fs.existsSync(local)) {
+            const files = readdirSyncRecursively(local);
+            files.forEach((file) => {
+                const directory = file.replace(`${local}/`, '').split('/');
+                const filename = directory.pop();
+                const dir = directory.join('/');
+                if (dir) {
+                    fs.mkdirSync(dir, { recursive: true });
+                }
+                const location = path.join(dir, filename === '_gitignore' ? '.gitignore' : filename);
+                const data = fs.readFileSync(file);
+                fs.writeFileSync(location, data);
+            });
+        } else {
+            // TODO: ?
+            const message = 'Local files not found.';
+            log(message, 'error');
+            throw new Error(message);
+        }
     }
     // PROJECT COMPLETE
     const postScript = (scripts[`post${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
