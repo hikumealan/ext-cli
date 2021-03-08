@@ -176,26 +176,46 @@ const projectSetup = (req, next) => {
     const project = req.input.project;
     const token = req.input.token;
     const opts = req.input.options;
-    // PROJECT PREP
-    const preScript = (scripts[`pre${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
-    if (preScript) {
-        execSync(`${preScript}`, {stdio: 'inherit'});
+    if (framework === 'velocity') {
+        // PROJECT PREP
+        const preScript = (scripts[`pre${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
+        if (preScript) {
+            execSync(`${preScript}`, {stdio: 'inherit'});
+        }
+        // PROJECT SETUP
+        fs.mkdirSync(project, { recursive: true });
+        process.chdir(`./${project}`);
+        const script = (scripts[`${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
+        execSync(`${script}${(opts || []).length ? ' ' + opts.join(' ') : ''}`, {stdio: 'inherit'});
+        // PROJECT FOLDER UPDATES
+        // TODO: Decide when is the best time to run this
+        // // PROJECT COMPLETE
+        // const postScript = (scripts[`post${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
+        // if (postScript) {
+        //     execSync(`${postScript}`, {stdio: 'inherit'});
+        // }
+    } else {
+        // PROJECT PREP
+        const preScript = (scripts[`pre${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
+        if (preScript) {
+            execSync(`${preScript}`, {stdio: 'inherit'});
+        }
+        // PROJECT SETUP
+        const script = (scripts[`${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
+        execSync(`${script}${(opts || []).length ? ' ' + opts.join(' ') : ''}`, {stdio: 'inherit'});
+        // PROJECT FOLDER UPDATES
+        process.chdir(`./${project}`);
+        if (token) {
+            log(`Adding .npmrc`);
+            fs.writeFileSync('.npmrc', npmrc(undefined, undefined, token));
+        }
+        // TODO: Decide when is the best time to run this
+        // // PROJECT COMPLETE
+        // const postScript = (scripts[`post${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
+        // if (postScript) {
+        //     execSync(`${postScript}`, {stdio: 'inherit'});
+        // }
     }
-    // PROJECT SETUP
-    const script = (scripts[`${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
-    execSync(`${script}${(opts || []).length ? ' ' + opts.join(' ') : ''}`, {stdio: 'inherit'});
-    // PROJECT FOLDER UPDATES
-    process.chdir(`./${project}`);
-    if (token) {
-        log(`Adding .npmrc`);
-        fs.writeFileSync('.npmrc', npmrc(undefined, undefined, token));
-    }
-    // TODO: Decide when is the best time to run this
-    // // PROJECT COMPLETE
-    // const postScript = (scripts[`post${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
-    // if (postScript) {
-    //     execSync(`${postScript}`, {stdio: 'inherit'});
-    // }
     main(req, next);
 };
 const projectComplete = (req) => {
@@ -264,7 +284,8 @@ const projectComplete = (req) => {
                     fs.mkdirSync(dir, { recursive: true });
                 }
                 const location = path.join(dir, filename === '_gitignore' ? '.gitignore' : filename);
-                fs.writeFileSync(location, fs.readFileSync(file));
+                const data = fs.readFileSync(file);
+                fs.writeFileSync(location, data);
             });
         } else {
             // TODO: ?
