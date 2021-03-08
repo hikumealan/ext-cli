@@ -188,12 +188,7 @@ const projectSetup = (req, next) => {
         const script = (scripts[`${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
         execSync(`${script}${(opts || []).length ? ' ' + opts.join(' ') : ''}`, {stdio: 'inherit'});
         // PROJECT FOLDER UPDATES
-        // TODO: Decide when is the best time to run this
-        // // PROJECT COMPLETE
-        // const postScript = (scripts[`post${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
-        // if (postScript) {
-        //     execSync(`${postScript}`, {stdio: 'inherit'});
-        // }
+        req.input.packageJSON = JSON.parse(fs.readFileSync('package.json').toString());
     } else {
         // PROJECT PREP
         const preScript = (scripts[`pre${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
@@ -207,14 +202,9 @@ const projectSetup = (req, next) => {
         process.chdir(`./${project}`);
         if (token) {
             log(`Adding .npmrc`);
-            fs.writeFileSync('.npmrc', npmrc(undefined, undefined, token));
+            const data = npmrc(undefined, undefined, token);
+            fs.writeFileSync('.npmrc', data);
         }
-        // TODO: Decide when is the best time to run this
-        // // PROJECT COMPLETE
-        // const postScript = (scripts[`post${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
-        // if (postScript) {
-        //     execSync(`${postScript}`, {stdio: 'inherit'});
-        // }
     }
     main(req, next);
 };
@@ -242,7 +232,30 @@ const projectComplete = (req) => {
                     fs.mkdirSync(directory, { recursive: true });
                 }
                 log(`Writing ${key}`);
-                fs.writeFileSync(key, data);
+                if (key === 'package.json' && req.input.packageJSON) {
+                    // Merge the package.json files
+                    // input = {
+                    //     "name": "ext-demo-app",
+                    //     "version": "1.0.0",
+                    //     "description": "",
+                    //     "main": "index.js",
+                    //     "scripts": {
+                    //         "test": "echo \"Error: no test specified\" && exit 1"
+                    //     },
+                    //     "keywords": [],
+                    //     "author": "",
+                    //     "license": "ISC"
+                    // }
+                    const merges = ['name', 'version', 'description', 'keywords', 'author', 'license'];
+                    const packageJSON = JSON.parse(data);
+                    merges.forEach((merge) => {
+                        console.log(merge);
+                        packageJSON[merge] = req.input.packageJSON[merge];
+                    });
+                    fs.writeFileSync(key, packageJSON);
+                } else {
+                    fs.writeFileSync(key, data);
+                }
             });
         });
         // TODO: Get individual files one at a time from the template
@@ -258,7 +271,7 @@ const projectComplete = (req) => {
         //         if (dir) {
         //             fs.mkdirSync(dir, { recursive: true });
         //         }
-        //         const script = (scripts[`npx:template:get`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template_file/g, `${template}/${file}`);
+        //         const script = (scripts[`npx:template:get-file`] || '').replace(/\$npm_config_cli/g, req.env.repo).replace(/\$npm_config_template_file/g, `${template}/${file}`);
         //         const content = execSync(`${script}`).toString();
         //         const {data} = JSON.parse(content);
         //         const location = path.join(dir, filename === '_gitignore' ? '.gitignore' : filename);
@@ -294,7 +307,6 @@ const projectComplete = (req) => {
             throw new Error(message);
         }
     }
-    // TODO: Decide when is the best time to run this
     // PROJECT COMPLETE
     const postScript = (scripts[`post${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
     if (postScript) {

@@ -59,22 +59,6 @@ const main = (req) => {
                 }
                 return;
             case '--get':
-                const file = value.split('/') || [];
-                if (file.length) {
-                    const directory = path.join(__dirname, `../template/${file[0]}`);
-                    if (fs.existsSync(directory)) {
-                        const filename = file.pop();
-                        location = path.join(directory, filename === '.gitignore' ? '_gitignore' : filename);
-                        const data = fs.readFileSync(location).toString();
-                        results = {data};
-                    } else {
-                        // TODO: Error
-                    }
-                } else {
-                    // TODO: Error
-                }
-                return;
-            case '--get-all':
                 if (value) {
                     location = path.join(__dirname, `../template/${value}`);
                     if (fs.existsSync(location)) {
@@ -86,6 +70,22 @@ const main = (req) => {
                             obj[filename === '_gitignore' ? '.gitignore' : filename] = fs.readFileSync(file).toString();
                             data.push(obj);
                         });
+                        results = {data};
+                    } else {
+                        // TODO: Error
+                    }
+                } else {
+                    // TODO: Error
+                }
+                return;
+            case '--get-file':
+                const file = value.split('/') || [];
+                if (file.length) {
+                    const directory = path.join(__dirname, `../template/${file[0]}`);
+                    if (fs.existsSync(directory)) {
+                        const filename = file.pop();
+                        location = path.join(directory, filename === '.gitignore' ? '_gitignore' : filename);
+                        const data = fs.readFileSync(location).toString();
                         results = {data};
                     } else {
                         // TODO: Error
