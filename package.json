@@ -23,7 +23,7 @@
     "create:vue-ionic": "npx @ionic/cli start $npm_config_project blank --type=vue --no-deps",
     "create:ionic-angular": "npx @ionic/cli start $npm_config_project blank --type=ionic-angular --no-deps",
 
-    "post:create:velocity": "npm init -y && git init",
+    "postcreate:velocity": "npm init -y && git init && git add -A && git commit -m \"initial commit\"",
     "postcreate:angular": "npm i @nexus/core @nexus/angular @ngrx/store",
     "postcreate:react": "npm i @nexus/core @nexus/react rxjs redux redux-observable",
     "postcreate:react-redux": "npm i @nexus/core @nexus/react rxjs",
