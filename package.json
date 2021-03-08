@@ -14,7 +14,7 @@
     "start": "NODE_ENV=production node .",
     "test": "echo \"Error: no test specified\" && exit 1",
 
-    "create:velocity": "mkdir $npm_config_project",
+    "create:velocity": "mkdir $npm_config_project && $_ && npm init -y",
     "create:angular": "npx @angular/cli new $npm_config_project --prefix=nexus --routing=true --interactive=false --skip-install=true --strict=true --verbose=true",
     "create:react": "npx create-react-app $npm_config_project --template typescript --use-npm --skip-install --verbose",
     "create:vue": "npx @vue/cli create $npm_config_project",
@@ -23,7 +23,7 @@
     "create:vue-ionic": "npx @ionic/cli start $npm_config_project blank --type=vue --no-deps",
     "create:ionic-angular": "npx @ionic/cli start $npm_config_project blank --type=ionic-angular --no-deps",
 
-    "postcreate:velocity": "npm init -y && git init && git add -A && git commit -m \"initial commit\"",
+    "postcreate:velocity": "git init && git add -A && git commit -m \"initial commit\"",
     "postcreate:angular": "npm i @nexus/core @nexus/angular @ngrx/store",
     "postcreate:react": "npm i @nexus/core @nexus/react rxjs redux redux-observable",
     "postcreate:react-redux": "npm i @nexus/core @nexus/react rxjs",

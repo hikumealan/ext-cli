@@ -280,6 +280,7 @@ const projectComplete = (req) => {
         execSync(`${postScript}`, {stdio: 'inherit'});
     }
     log(`SUCCESS:: Project was generated successfully!`);
+    log(`Check it out @ ${process.cwd()}`);
 };
 
 // EXPORTS
