@@ -297,6 +297,7 @@ const projectComplete = (req) => {
     if (postScript) {
         execSync(`${postScript}`, {stdio: 'inherit'});
     }
+    execSync(`npm i`, {stdio: 'inherit'});
     log(`SUCCESS:: Project was generated successfully!`);
     log(`Check it out @ ${process.cwd()}`);
 };
