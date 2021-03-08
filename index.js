@@ -8,9 +8,9 @@ const {init, processHandler} = require('./bin/cli');
 process.on('SIGINT', () => {
     processHandler('SIGINT', arguments);
 });
-// process.on('uncaughtException', () => {
-//     processHandler('uncaughtException', arguments);
-// });
+process.on('uncaughtException', () => {
+    processHandler('uncaughtException', arguments);
+});
 process.on('unhandledRejection', () => {
     processHandler('unhandledRejection', arguments);
 });
