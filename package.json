@@ -23,7 +23,7 @@
         "precreate:ionic-angular": "npx @ionic/cli start $npm_config_project blank --type=ionic-angular --no-deps",
 
         "create:velocity": "git init && git add -A && git commit -m \"initial commit\"",
-        "create:angular": "npm i @nexus/core @nexus/angular @ngrx/store @ngrx/store-devtools @ngrx/effects @ngrx/router-store @ngrx/entity @ngrx/component-store && npm i @ngrx/schematics --save-dev",
+        "create:angular": "ng add @angular/pwa && npm i @nexus/core @nexus/angular @ngrx/store @ngrx/store-devtools @ngrx/effects @ngrx/router-store @ngrx/entity @ngrx/component-store && npm i @ngrx/schematics --save-dev && ng add @ngrx/router-store",
         "create:react": "npm i @nexus/core @nexus/react rxjs redux",
         "create:vue": "npm i @nexus/core @nexus/vue rxjs vue-rx",
         "create:angular-ionic": "npm i @nexus/core @nexus/angular @ngrx/store @ngrx/store-devtools @ngrx/effects @ngrx/router-store @ngrx/entity @ngrx/component-store && npm i @ngrx/schematics --save-dev",
@@ -32,7 +32,7 @@
         "create:ionic-angular": "npm i @nexus/core @nexus/angular",
 
         "postcreate:velocity": "",
-        "postcreate:angular": "ng add @angular/pwa && ng add @ngrx/router-store && ng generate @ngrx/schematics:store State --root --module app.module.ts && ng generate @ngrx/schematics:effect App --root --module app.module.ts",
+        "postcreate:angular": "ng generate @ngrx/schematics:store State --root --module app.module.ts && ng generate @ngrx/schematics:effect App --root --module app.module.ts",
         "postcreate:react": "",
         "postcreate:vue": "",
         "postcreate:angular-ionic": "",
