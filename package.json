@@ -1,66 +1,67 @@
 {
-  "name": "ext-cli",
-  "version": "1.0.0",
-  "description": "Extend CLIs",
-  "main": "index.js",
-  "bin": {
-    "ext-cli": "./index.js"
-  },
-  "engines": {
-    "node": ">=10.0.0 <15",
-    "npm": ">=5.2.0"
-  },
-  "scripts": {
-    "start": "NODE_ENV=production node .",
-    "test": "echo \"Error: no test specified\" && exit 1",
-
-    "create:velocity": "npm init -y",
-    "create:angular": "npx @angular/cli new $npm_config_project --prefix=nexus --routing=true --interactive=false --skip-install=true --strict=true --verbose=true",
-    "create:react": "npx create-react-app $npm_config_project --template typescript --use-npm --skip-install --verbose",
-    "create:vue": "npx @vue/cli create $npm_config_project",
-    "create:angular-ionic": "npx @ionic/cli start $npm_config_project blank --type=angular --no-deps",
-    "create:react-ionic": "npx @ionic/cli start $npm_config_project blank --type=react --no-deps",
-    "create:vue-ionic": "npx @ionic/cli start $npm_config_project blank --type=vue --no-deps",
-    "create:ionic-angular": "npx @ionic/cli start $npm_config_project blank --type=ionic-angular --no-deps",
-
-    "postcreate:velocity": "git init && git add -A && git commit -m \"initial commit\"",
-    "postcreate:angular": "npm i @nexus/core @nexus/angular @ngrx/store",
-    "postcreate:react": "npm i @nexus/core @nexus/react rxjs redux redux-observable",
-    "postcreate:vue": "npm i @nexus/core @nexus/vue rxjs vue-rx",
-    "postcreate:angular-ionic": "npm i @nexus/core @nexus/angular @ngrx/store",
-    "postcreate:react-ionic": "npm i @nexus/core @nexus/react redux-observable",
-    "postcreate:vue-ionic": "npm i @nexus/core @nexus/vue vue-rx rxjs",
-    "postcreate:ionic-angular": "npm i @nexus/core @nexus/angular @ngrx/store",
-
-    "npx:template:list": "npx $npm_config_cli template --list",
-    "npx:template:info": "npx $npm_config_cli template --info=$npm_config_template",
-    "npx:template:get": "npx $npm_config_cli template --get=$npm_config_template",
-    "npx:template:get-file": "npx $npm_config_cli template --get-file=$npm_config_template_file",
-
-    "version": "node . --version",
-    "version:node": "node --version",
-    "version:npm": "npm --version",
-    "version:npx": "npx --version",
-    "version:angular": "npx @angular/cli --version",
-    "version:react": "npx create-react-app --version",
-    "version:vue": "npx @vue/cli --version",
-    "version:ionic": "npx @ionic/cli --version"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hikumealan/ext-cli.git"
-  },
-  "keywords": [
-    "key",
-    "words"
-  ],
-  "author": "Bryan.A.Olson",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/hikumealan/ext-cli/issues"
-  },
-  "homepage": "https://github.com/hikumealan/ext-cli#readme",
-  "dependencies": {
-    "lodash": "^4.17.21"
-  }
+    "name": "ext-cli",
+    "version": "1.0.0",
+    "description": "Extend CLIs",
+    "main": "index.js",
+    "bin": {
+        "ext-cli": "./index.js"
+    },
+    "engines": {
+        "node": ">=10.0.0 <15",
+        "npm": ">=5.2.0"
+    },
+    "scripts": {
+        "start": "NODE_ENV=production node .",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "create:velocity": "npm init -y",
+        "create:angular": "npx @angular/cli new $npm_config_project --prefix=nexus --routing=true --interactive=false --skip-install=true --strict=true",
+        "create:react": "npx create-react-app $npm_config_project --template typescript --use-npm --skip-install",
+        "create:vue": "npx @vue/cli create $npm_config_project",
+        "create:angular-ionic": "npx @ionic/cli start $npm_config_project blank --type=angular --no-deps",
+        "create:react-ionic": "npx @ionic/cli start $npm_config_project blank --type=react --no-deps",
+        "create:vue-ionic": "npx @ionic/cli start $npm_config_project blank --type=vue --no-deps",
+        "create:ionic-angular": "npx @ionic/cli start $npm_config_project blank --type=ionic-angular --no-deps",
+        "postcreate:velocity": "git init && git add -A && git commit -m \"initial commit\"",
+        "postcreate:angular": "npm i @nexus/core @nexus/angular @ngrx/store @ngrx/store-devtools @ngrx/effects @ngrx/router-store @ngrx/entity @ngrx/component-store",
+        "postcreate:react": "npm i @nexus/core @nexus/react rxjs redux redux-observable",
+        "postcreate:vue": "npm i @nexus/core @nexus/vue rxjs vue-rx",
+        "postcreate:angular-ionic": "npm i @nexus/core @nexus/angular @ngrx/store",
+        "postcreate:react-ionic": "npm i @nexus/core @nexus/react redux-observable",
+        "postcreate:vue-ionic": "npm i @nexus/core @nexus/vue vue-rx rxjs",
+        "postcreate:ionic-angular": "npm i @nexus/core @nexus/angular @ngrx/store",
+        "npx:template:list": "npx $npm_config_cli template --list",
+        "npx:template:info": "npx $npm_config_cli template --info=$npm_config_template",
+        "npx:template:get": "npx $npm_config_cli template --get=$npm_config_template",
+        "npx:template:get-file": "npx $npm_config_cli template --get-file=$npm_config_template_file",
+        "version": "node . --version",
+        "version:node": "node --version",
+        "version:npm": "npm --version",
+        "version:npx": "npx --version",
+        "version:angular": "npx @angular/cli --version",
+        "version:react": "npx create-react-app --version",
+        "version:vue": "npx @vue/cli --version",
+        "version:ionic": "npx @ionic/cli --version",
+        "prepare": "husky install"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hikumealan/ext-cli.git"
+    },
+    "keywords": [
+        "key",
+        "words"
+    ],
+    "author": "Bryan.A.Olson",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/hikumealan/ext-cli/issues"
+    },
+    "homepage": "https://github.com/hikumealan/ext-cli#readme",
+    "dependencies": {
+        "lodash": "^4.17.21"
+    },
+    "devDependencies": {
+        "husky": "^5.1.3",
+        "prettier": "2.2.1"
+    }
 }
