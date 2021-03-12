@@ -16,8 +16,8 @@ const {
 } = require('./utils');
 
 const init = 'get-project-framework';
-const main = (req, next=init) => {
-    const prompt = (value, question, validator, next) =>{
+const main = (req, next = init) => {
+    const prompt = (value, question, validator, next) => {
         const isValid = validator;
         if (isValid(value)) {
             main(req, next);
@@ -33,6 +33,9 @@ const main = (req, next=init) => {
         }
     };
     next = typeof next === 'string' ? next : '';
+    // if (process.env.NODE_ENV !== 'production') {
+    //     log(`CREATE EVENT:: ${next}`);
+    // }
     switch (next) {
         case 'get-project-framework':
             const options = req.cmds[req.input.cmd] || [];
@@ -74,7 +77,7 @@ const main = (req, next=init) => {
         case 'get-project-token':
             prompt(
                 req.input.token,
-                `Please provide a npmrc token. \n`,
+                `Please provide your .npmrc token. \n`,
                 (input) => {
                     if (input.length) {
                         req.input.token = input;
@@ -156,7 +159,7 @@ const projectOptions = (req, next) => {
     }
     if (!req.input.token) {
         // TODO: Do you want to provide a token? (Y || N)
-        ask.question(`Do you want to provide a token? (Yes/No)\n`, (input) => {
+        ask.question(`Do you want to provide a token? (Yes|No)\n`, (input) => {
             ask.close();
             input = (input || '').toLowerCase();
             if (input.indexOf('y') === 0) {
@@ -177,37 +180,25 @@ const projectSetup = (req, next) => {
     const project = req.input.project;
     const token = req.input.token;
     const opts = req.input.options;
-    if (framework === 'velocity') {
-        // PROJECT PREP
-        const preScript = (scripts[`pre${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
-        if (preScript) {
-            execSync(`${preScript}`, {stdio: 'inherit'});
-        }
-        // PROJECT SETUP
-        fs.mkdirSync(project, { recursive: true });
-        process.chdir(`./${project}`);
-        const script = (scripts[`${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
-        execSync(`${script}${(opts || []).length ? ' ' + opts.join(' ') : ''}`, {stdio: 'inherit'});
-        // PROJECT FOLDER UPDATES
-        req.input.packageJSON = JSON.parse(fs.readFileSync('package.json').toString());
-    } else {
-        // PROJECT PREP
-        const preScript = (scripts[`pre${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
-        if (preScript) {
-            execSync(`${preScript}`, {stdio: 'inherit'});
-        }
-        // PROJECT SETUP
-        const script = (scripts[`${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
-        execSync(`${script}${(opts || []).length ? ' ' + opts.join(' ') : ''}`, {stdio: 'inherit'});
-        // PROJECT FOLDER UPDATES
-        process.chdir(`./${project}`);
-        if (token) {
-            log(`Adding .npmrc`);
-            const data = npmrc(undefined, undefined, token);
-            fs.writeFileSync('.npmrc', data);
-        }
-        req.input.packageJSON = JSON.parse(fs.readFileSync('package.json').toString());
+    // PROJECT PREP
+    const preScript = (scripts[`pre${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
+    if (preScript) {
+        execSync(`${preScript}`, {stdio: 'inherit'});
     }
+    // PROJECT FOLDER UPDATES
+    if (!fs.existsSync(project)) {
+        fs.mkdirSync(project, { recursive: true });
+    }
+    process.chdir(`./${project}`);
+    if (token) {
+        log(`Adding .npmrc`);
+        const data = npmrc(undefined, undefined, token);
+        fs.writeFileSync('.npmrc', data);
+    }
+    // PROJECT SETUP
+    const script = (scripts[`${cmd}:${framework}`] || '').replace(/\$npm_config_project/g, project);
+    execSync(`${script}${(opts || []).length ? ' ' + opts.join(' ') : ''}`, {stdio: 'inherit'});
+    req.input.packageJSON = JSON.parse(fs.readFileSync('package.json').toString());
     main(req, next);
 };
 const projectComplete = (req) => {
