@@ -36,6 +36,8 @@ const checks = {
 };
 // For more info about node and npm versions checkout https://nodejs.org/dist/index.json
 if (checks.nodeMinMet && checks.nodeMaxMet && checks.npmMinMet && checks.npmMaxMet){
+        console.log(`\nRUNNING: ${process.env.npm_package_name}@${process.env.npm_package_version}\n\n`);
+        console.table(process.env);
     init(packageJSON);
 } else {
     console.error('');
