@@ -7,6 +7,10 @@ const STATE = {
   options: ['create', 'generate', 'template', '--version', '--help'],
 };
 
+const getHelp = () => {
+  utils.log(`Help documentation goes here.`);
+  process.exit();
+};
 const getVersion = () => {
   utils.log(utils.getPackageVersion());
   process.exit();
@@ -19,8 +23,8 @@ utils.event.on('request-main', (req) => {
       break;
     }
     case 'generate': {
-      utils.log(`Command not available - '${cmd}' coming soon`, 'error');
-      // process.exit();
+      utils.log(`Command not available - ['${cmd}'] coming soon`, 'error');
+      process.exit(1);
       // generate.init(req);
       break;
     }
@@ -33,13 +37,11 @@ utils.event.on('request-main', (req) => {
       break;
     }
     case '--help': {
-      // TODO: Give help here
-      utils.log(`Command not available - '${cmd}' coming soon`, 'error');
-      process.exit();
+      getHelp();
       break;
     }
     default: {
-      utils.log(`Command not found - '${cmd}'`, 'error');
+      utils.log(`Command not found ['${cmd}'] - Try using --help for assistance.`, 'error');
       utils.event.emit('request-prompt', req);
       break;
     }
@@ -70,9 +72,9 @@ module.exports = {
       if (cmd === '--version') {
         getVersion();
       } else {
-        const currentVersion = utils.getSemanticVersion(utils.getPackageVersion());
+        const localVersion = utils.getSemanticVersion(utils.getPackageVersion());
         // check the server for the latest cli version
-        const latestVersion = utils.getSemanticVersion(
+        const remoteVersion = utils.getSemanticVersion(
           utils.execSync({
             command: utils.commands('version:cli'),
             replacements: {
@@ -81,13 +83,13 @@ module.exports = {
             },
           })
         );
-        if (currentVersion < latestVersion) {
-          // CLI version is out-of-date -> forward request on via npx
+        if (localVersion < remoteVersion) {
           utils.log(`Nexus CLI upgrade available - Please upgrade at your earliest convenience.`, 'error');
+          // CLI version is out-of-date -> forward request on via npx
           // utils.execSync(`npx --userconfig ${process.argv[1]}/.npmrc ${name} ${params.join(' ')} --self=${version}`);
           // process.exit();
         }
-        // CLI version checks out and is good to process cmd
+        // CLI version checks out and is good to process the command
         const request = {
           cmd,
           env: {
@@ -103,7 +105,7 @@ module.exports = {
         utils.event.emit('request-main', request);
       }
     } else {
-      utils.log(`Command not supplied - Try using --help for assistance.`, 'error');
+      getHelp();
     }
   },
 };

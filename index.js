@@ -11,7 +11,11 @@ const { node, npm } = engines || {};
 // Gather versions
 const versions = {
   nodeMinVersion: utils.getSemanticVersion((node || '').split(' ')[0]),
-  nodeVersion: utils.getSemanticVersion(((process || {}).versions || {}).node),
+  nodeVersion: utils.getSemanticVersion(
+      utils.execSync({
+        command: utils.commands('version:node'),
+      })
+  ),
   nodeMaxVersion: utils.getSemanticVersion((node || '').split(' ')[1]),
   npmMinVersion: utils.getSemanticVersion((npm || '').split(' ')[0]),
   npmVersion: utils.getSemanticVersion(
