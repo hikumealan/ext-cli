@@ -58,7 +58,7 @@ const execSync = (command, replacements, preserveFormat) => {
     console.log(`>> ${command}`);
     console.log();
     console.log();
-    result = child_process.execSync(command, { stdio: 'inherit' }).toString();
+    result = child_process.execSync(command).toString();
     // result = child_process.execSync(command, { stdio: 'inherit' }).toString();
     if (!preserveFormat) {
       result = replaceAll(result, '\n', '');
