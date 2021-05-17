@@ -28,6 +28,7 @@ const prompt = (value, question, validator, next) => {
 };
 
 const main = (next) => {
+  console.log(`MAIN: ${next}`);
   next = typeof next === 'string' ? next : '';
   switch (next) {
     case 'get-project-framework': {
@@ -105,6 +106,7 @@ const main = (next) => {
 };
 
 const projectOptions = (next) => {
+  console.log(`OPTIONS: `);
   const options = STATE.req.options;
   let templates = [];
   try {
@@ -179,6 +181,7 @@ const projectOptions = (next) => {
   main(next);
 };
 const projectSetup = (next) => {
+  console.log(`SETUP: `);
   // PROJECT INIT
   const framework = STATE.req.framework;
   const project = STATE.req.project;
@@ -232,6 +235,7 @@ const projectSetup = (next) => {
   main(next);
 };
 const projectComplete = () => {
+  console.log(`COMPLETE: `);
   // PROJECT EXTEND
   const framework = STATE.req.framework;
   const project = STATE.req.project;
@@ -342,6 +346,7 @@ const projectComplete = () => {
 };
 
 const init = (req) => {
+  console.log(`CREATE: init`);
   // utils.log(`\nRUNNING: ${process.env.npm_package_name}@${process.env.npm_package_version}\n\n`);
   STATE.env = (req || {}).env;
   // create ${framework} ${project_name} --use-template=disputes --use-token=${token} --${framework_cli_options}
@@ -361,6 +366,7 @@ const init = (req) => {
       options,
     };
   }
+  console.log(`CREATE: main`);
   main(STATE.init);
 };
 

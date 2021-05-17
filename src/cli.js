@@ -12,9 +12,11 @@ const getVersion = () => {
   process.exit();
 };
 utils.event.on('request-main', (req) => {
+  console.log(`EVENT: received`);
   const cmd = typeof (req || {}).cmd === 'string' ? req.cmd.toLowerCase() : '';
   switch (cmd) {
     case 'create': {
+      console.log(`INIT: create`);
       create.init(req);
       break;
     }
@@ -102,6 +104,7 @@ module.exports = {
           },
           params: process.argv.length > 2 ? process.argv.slice(2) : [],
         };
+        console.log(`EVENT: fire`);
         utils.event.emit('request-main', request);
       }
     } else {
