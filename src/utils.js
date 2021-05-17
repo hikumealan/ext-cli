@@ -68,7 +68,7 @@ const execSync = ({ command, replacements, stdio }, silence = true) => {
     // result = e;
   }
   if (silence === false) {
-    console.log(`>> ${command}: ${result}`);
+    log(`>> ${command}: ${result}`);
   }
   return result;
 };
