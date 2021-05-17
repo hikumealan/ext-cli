@@ -2,7 +2,6 @@
 const fs = require('fs');
 const path = require('path');
 const { utils } = require('../utils');
-const { name } = require('../../package.json');
 const STATE = {
   templatePath: '../../.templates',
   init: 'get-project-framework',
@@ -106,13 +105,12 @@ const main = (next) => {
 };
 
 const projectOptions = (next) => {
-  const { commands } = STATE.env.pkg || {};
   const options = STATE.req.options;
   let templates = [];
   try {
     // Load Templates remotely
-    const results = utils.execSync(commands['template:list'], {
-      $npm_config_cli: ((process || {}).env || {}).npm_package_name || name,
+    const results = utils.execSync(utils.commands['template:list'], {
+      $npm_config_cli: utils.getPackageName(),
       $npm_dir_path: process.argv[1],
     });
     const { data } = utils.parseJSON(results);
@@ -176,20 +174,23 @@ const projectOptions = (next) => {
 };
 const projectSetup = (next) => {
   // PROJECT INIT
-  const { commands } = STATE.env.pkg || {};
   const framework = STATE.req.framework;
   const project = STATE.req.project;
   const token = STATE.req.token;
   const opts = STATE.opts;
   // PROJECT PREP
   utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-  const prescript = commands[`precreate:${framework}`];
+  const prescript = utils.commands[`precreate:${framework}`];
   console.log(`PRESCRIPT: ${prescript}`);
   if (prescript) {
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-    utils.execSync(prescript, {
-      $npm_config_cli: ((process || {}).env || {}).npm_package_name || name,
-    }, true);
+    utils.execSync(
+      prescript,
+      {
+        $npm_config_project: project,
+      },
+      true
+    );
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
   }
   // PROJECT SETUP
@@ -198,15 +199,19 @@ const projectSetup = (next) => {
     process.chdir(`./${project}`);
   }
   utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-  const script = commands[`create:${framework}`];
+  const script = utils.commands[`create:${framework}`];
   console.log(`SCRIPT: ${script}`);
   if (script) {
     const cmd = `${script}${(opts || []).length ? ' ' + opts.join(' ') : ''}`;
     console.log(`CMD: ${cmd}`);
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-    utils.execSync(cmd, {
-      $npm_config_cli: ((process || {}).env || {}).npm_package_name || name,
-    }, true);
+    utils.execSync(
+      cmd,
+      {
+        $npm_config_project: project,
+      },
+      true
+    );
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
   }
   // PROJECT FOLDER UPDATES
@@ -218,20 +223,19 @@ const projectSetup = (next) => {
     const data = utils.npmrc(undefined, undefined, token);
     fs.writeFileSync(`./${project}/.npmrc`, data);
   }
-  STATE.req.packageJSON = utils.parseJSON(fs.readFileSync(`./${project}/package.json`).toString());
   main(next);
 };
 const projectComplete = () => {
   // PROJECT EXTEND
-  const { commands } = STATE.env.pkg || {};
   const framework = STATE.req.framework;
   const project = STATE.req.project;
   const template = STATE.req.template;
+  const pkgJSON = utils.parseJSON(fs.readFileSync(`./${project}/package.json`).toString());
   try {
     utils.log(`Cloning template files from ${template} - This may take a few minutes.`);
     // TODO: look at git clone of sub-folder
-    const results = utils.execSync(commands['template:get'], {
-      $npm_config_cli: ((process || {}).env || {}).npm_package_name || name,
+    const results = utils.execSync(utils.commands['template:get'], {
+      $npm_config_cli: utils.getPackageName(),
       $npm_dir_path: process.argv[1],
       $npm_config_template: template,
     });
@@ -246,7 +250,7 @@ const projectComplete = () => {
         const data = file[key];
         const filepath = path.join(project, key);
         // TODO: Binary files don't work
-        utils.writeDirFileSync(filepath, data, STATE.req.packageJSON);
+        utils.writeDirFileSync(filepath, data, pkgJSON);
       });
     });
     // TODO: Get individual files one at a time from the template
@@ -288,7 +292,7 @@ const projectComplete = () => {
         const filename = location.pop();
         const directory = `${project}/${location.join('/')}`;
         const filepath = path.join(directory, filename);
-        utils.writeDirFileSync(filepath, data, STATE.req.packageJSON);
+        utils.writeDirFileSync(filepath, data, pkgJSON);
       });
     } else {
       // TODO: ?
@@ -300,16 +304,23 @@ const projectComplete = () => {
   // PROJECT COMPLETE
   process.chdir(`./${project}`);
   utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-  const postscript = commands[`postcreate:${framework}`];
+  const postscript = utils.commands[`postcreate:${framework}`];
   console.log(`POSTSCRIPT: ${postscript}`);
   if (postscript) {
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-    utils.execSync(postscript, {
-      $npm_config_cli: ((process || {}).env || {}).npm_package_name || name,
-    }, true);
+    utils.execSync(
+      postscript,
+      {
+        $npm_config_project: project,
+      },
+      true
+    );
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
   }
-  utils.execSync('npm i', null, true);
+  const cmd = utils.commands[`postcreate`];
+  if (cmd) {
+    utils.execSync(cmd, null, true);
+  }
   process.chdir(`../`);
   utils.log(`SUCCESS:: Project was generated successfully!`);
   utils.log(`Check it out @ ${process.cwd()}`);

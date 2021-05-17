@@ -1,5 +1,6 @@
 'use strict';
 const _ = require('lodash');
+const packageJSON = require('../package.json');
 const fs = require('fs');
 const path = require('path');
 // const http = require('http');
@@ -45,6 +46,9 @@ const ask = {
     this.cli = null;
   },
 };
+const commands = () => {
+  return packageJSON.commands || {};
+};
 const execSync = (command, replacements, stdio) => {
   let result;
   if (_.isPlainObject(replacements) && !_.isEmpty(replacements)) {
@@ -54,7 +58,7 @@ const execSync = (command, replacements, stdio) => {
   }
   try {
     if (stdio) {
-      child_process.execSync(command, { stdio: 'inherit' })
+      child_process.execSync(command, { stdio: 'inherit' });
     } else {
       result = child_process.execSync(command).toString();
       result = replaceAll(result, '\n', '');
@@ -64,6 +68,16 @@ const execSync = (command, replacements, stdio) => {
   }
   console.log(`>> ${command}: ${result}`);
   return result;
+};
+const getPackageName = () => {
+  // ((process || {}).env || {}).npm_package_name
+  let name = packageJSON.name || '';
+  return 'https://github.com/hikumealan/ext-cli' || name;
+};
+const getPackageVersion = () => {
+  // ((process || {}).env || {}).npm_package_version
+  let version = packageJSON.version || '';
+  return version;
 };
 const getSemanticVersion = (version) => {
   let result = typeof version === 'string' ? version.replace(/[^0-9.]+/g, '') : '';
@@ -201,7 +215,7 @@ const replaceAll = (str, key, value) => {
 
 const separator = '####';
 
-const writeDirFileSync = (filepath, data, packageJSON) => {
+const writeDirFileSync = (filepath, data, pkgJSON) => {
   try {
     const location = filepath.split('/');
     const file = location.pop();
@@ -212,9 +226,9 @@ const writeDirFileSync = (filepath, data, packageJSON) => {
     }
     filepath = path.join(directory, filename);
     log(`Writing ${filepath}`);
-    if (filename === 'package.json' && packageJSON) {
+    if (filename === 'package.json' && pkgJSON) {
       const pkg = JSON.parse(data);
-      const merged = _.merge(pkg, packageJSON);
+      const merged = _.merge(pkg, pkgJSON);
       fs.writeFileSync(filepath, JSON.stringify(merged, null, 2));
     } else {
       // TODO: Check if file is binary and write the data as binary
@@ -228,8 +242,11 @@ const writeDirFileSync = (filepath, data, packageJSON) => {
 module.exports = {
   utils: {
     ask,
+    commands,
     event,
     execSync,
+    getPackageName,
+    getPackageVersion,
     getSemanticVersion,
     log,
     npmrc,

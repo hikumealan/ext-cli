@@ -40,6 +40,7 @@
     "create:velocity": "npm init -y",
     "create:vue": "npx @vue/cli create $npm_config_project",
     "create:vue-ionic": "npx @ionic/cli start $npm_config_project blank --type=vue --no-deps",
+    "postcreate": "npm i",
     "post-create:velocity": "git init && git add -A && git commit -m \"initial commit\"",
     "postcreate:angular": "npm i @nexus/core @nexus/angular @ngrx/store",
     "postcreate:angular-ionic": "npm i @nexus/core @nexus/angular @ngrx/store",
@@ -68,7 +69,8 @@
     "template:list:backup": "npx --userconfig $npm_dir_path/.npmrc $npm_config_cli template --list",
     "version:node": "node --version",
     "version:npm": "npm --version",
-    "version:npx": "npx --userconfig $npm_dir_path/.npmrc $npm_config_cli --version",
+    "version:npx:backup": "npx --userconfig $npm_dir_path/.npmrc $npm_config_cli --version",
+    "version:npx": "npx $npm_config_cli --version",
     "version:package": "node . --version"
   }
 }

@@ -1,5 +1,4 @@
 'use strict';
-const { version } = require('../package.json');
 const { utils } = require('./utils');
 const create = require('./create/index');
 // const generate = require('./generate/index');
@@ -9,7 +8,7 @@ const STATE = {
 };
 
 const getVersion = () => {
-  utils.log(((process || {}).env || {}).npm_package_version || version);
+  utils.log(utils.getPackageVersion());
   process.exit();
 };
 utils.event.on('request-main', (req) => {
@@ -64,7 +63,6 @@ utils.event.on('request-prompt', (req) => {
 
 module.exports = {
   init: (packageJSON) => {
-    const { commands, name, version } = packageJSON || {};
     if ((process || {}).argv && Array.isArray(process.argv) && process.argv.length > 2) {
       // Command has been received
       const params = process.argv.slice(2);
@@ -72,33 +70,34 @@ module.exports = {
       if (cmd === '--version') {
         getVersion();
       } else {
+        const currentVersion = utils.getSemanticVersion(utils.getPackageVersion());
         // check the server for the latest cli version
         const latestVersion = utils.getSemanticVersion(
-          utils.execSync(commands['version:npx'], {
-            $npm_config_cli: ((process || {}).env || {}).npm_package_name || name,
+          utils.execSync(utils.commands['version:npx'], {
+            $npm_config_cli: utils.getPackageName(),
             $npm_dir_path: process.argv[1],
           })
         );
-        if (version >= latestVersion) {
-          // CLI version checks out and is good to process cmd
-          const request = {
-            cmd,
-            env: {
-              argv: process.argv,
-              root: process.argv[1],
-              cwd: process.cwd(),
-              dir: __dirname,
-              loc: __filename,
-              pkg: packageJSON,
-            },
-            params: process.argv.length > 2 ? process.argv.slice(2) : [],
-          };
-          utils.event.emit('request-main', request);
-        } else {
-          // utils.log(`Nexus CLI upgrade available - Please upgrade at your earliest convenience.`, 'error');
+        if (currentVersion < latestVersion) {
           // CLI version is out-of-date -> forward request on via npx
-          utils.execSync(`npx --userconfig ${process.argv[1]}/.npmrc ${name} ${params.join(' ')} --self=${version}`);
+          utils.log(`Nexus CLI upgrade available - Please upgrade at your earliest convenience.`, 'error');
+          // utils.execSync(`npx --userconfig ${process.argv[1]}/.npmrc ${name} ${params.join(' ')} --self=${version}`);
+          // process.exit();
         }
+        // CLI version checks out and is good to process cmd
+        const request = {
+          cmd,
+          env: {
+            argv: process.argv,
+            root: process.argv[1],
+            cwd: process.cwd(),
+            dir: __dirname,
+            loc: __filename,
+            pkg: packageJSON,
+          },
+          params: process.argv.length > 2 ? process.argv.slice(2) : [],
+        };
+        utils.event.emit('request-main', request);
       }
     } else {
       utils.log(`Command not supplied - Try using --help for assistance.`, 'error');
