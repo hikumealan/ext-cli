@@ -1,7 +1,6 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 const { utils } = require('../utils');
 const { name } = require('../../package.json');
 const STATE = {
@@ -183,17 +182,33 @@ const projectSetup = (next) => {
   const token = STATE.req.token;
   const opts = STATE.opts;
   // PROJECT PREP
-  const prescript = utils.replaceAll(commands[`precreate:${framework}`] || '', '$npm_config_project', project);
+  utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+  const prescript = commands[`precreate:${framework}`];
+  console.log(`PRESCRIPT: ${prescript}`);
   if (prescript) {
-    execSync(`${prescript}`, { stdio: 'inherit' });
+    utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+    utils.execSync(prescript, {
+      $npm_config_cli: ((process || {}).env || {}).npm_package_name || name,
+    });
+    utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
   }
   // PROJECT SETUP
   if (framework === 'velocity') {
     fs.mkdirSync(project, { recursive: true });
     process.chdir(`./${project}`);
   }
-  const script = utils.replaceAll(commands[`create:${framework}`] || '', '$npm_config_project', project);
-  execSync(`${script}${(opts || []).length ? ' ' + opts.join(' ') : ''}`, { stdio: 'inherit' });
+  utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+  const script = commands[`create:${framework}`];
+  console.log(`SCRIPT: ${script}`);
+  if (script) {
+    const cmd = `${script}${(opts || []).length ? ' ' + opts.join(' ') : ''}`;
+    console.log(`CMD: ${cmd}`);
+    utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+    utils.execSync(cmd, {
+      $npm_config_cli: ((process || {}).env || {}).npm_package_name || name,
+    });
+    utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+  }
   // PROJECT FOLDER UPDATES
   if (framework === 'velocity') {
     process.chdir(`../`);
@@ -284,11 +299,17 @@ const projectComplete = () => {
   }
   // PROJECT COMPLETE
   process.chdir(`./${project}`);
-  const postScript = utils.replaceAll(commands[`postcreate:${framework}`] || '', '$npm_config_project', project);
-  if (postScript) {
-    execSync(`${postScript}`, { stdio: 'inherit' });
+  utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+  const postscript = commands[`postcreate:${framework}`];
+  console.log(`POSTSCRIPT: ${postscript}`);
+  if (postscript) {
+    utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+    utils.execSync(postscript, {
+      $npm_config_cli: ((process || {}).env || {}).npm_package_name || name,
+    });
+    utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
   }
-  execSync(`npm i`, { stdio: 'inherit' });
+  utils.execSync('npm i');
   process.chdir(`../`);
   utils.log(`SUCCESS:: Project was generated successfully!`);
   utils.log(`Check it out @ ${process.cwd()}`);
