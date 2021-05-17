@@ -72,23 +72,23 @@ module.exports = {
       if (cmd === '--version') {
         getVersion();
       } else {
-        const localVersion = utils.getSemanticVersion(utils.getPackageVersion());
-        // check the server for the latest cli version
-        const remoteVersion = utils.getSemanticVersion(
-          utils.execSync({
-            command: utils.commands('version:cli'),
-            replacements: {
-              $npm_config_cli: utils.getPackageName(),
-              $npm_dir_path: process.argv[1],
-            },
-          })
-        );
-        if (localVersion < remoteVersion) {
-          utils.log(`Nexus CLI upgrade available - Please upgrade at your earliest convenience.`, 'error');
-          // CLI version is out-of-date -> forward request on via npx
-          // utils.execSync(`npx --userconfig ${process.argv[1]}/.npmrc ${name} ${params.join(' ')} --self=${version}`);
-          // process.exit();
-        }
+        // const localVersion = utils.getSemanticVersion(utils.getPackageVersion());
+        // // check the server for the latest cli version
+        // const remoteVersion = utils.getSemanticVersion(
+        //   utils.execSync({
+        //     command: utils.commands('version:cli'),
+        //     replacements: {
+        //       $npm_config_cli: utils.getPackageName(),
+        //       $npm_dir_path: process.argv[1],
+        //     },
+        //   })
+        // );
+        // if (localVersion < remoteVersion) {
+        //   utils.log(`Nexus CLI upgrade available - Please upgrade at your earliest convenience.`, 'error');
+        //   // CLI version is out-of-date -> forward request on via npx
+        //   // utils.execSync(`npx --userconfig ${process.argv[1]}/.npmrc ${name} ${params.join(' ')} --self=${version}`);
+        //   // process.exit();
+        // }
         // CLI version checks out and is good to process the command
         const request = {
           cmd,
