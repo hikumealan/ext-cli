@@ -49,8 +49,8 @@ const ask = {
 const commands = (cmd) => {
   return ((packageJSON || {}).commands || {})[cmd] || '';
 };
-const execSync = ({ command, replacements, stdio, silence }) => {
-  let result;
+const execSync = ({ command, replacements, stdio }, silence = true) => {
+  let result = null;
   if (_.isPlainObject(replacements) && !_.isEmpty(replacements)) {
     for (const [key, value] of Object.entries(replacements)) {
       command = replaceAll(command, key, value);
@@ -62,11 +62,12 @@ const execSync = ({ command, replacements, stdio, silence }) => {
     } else {
       result = child_process.execSync(command).toString();
       result = replaceAll(result, '\n', '');
+      // result = separator + `{data: ${result}}` + separator;
     }
   } catch (e) {
     // result = e;
   }
-  if (silence === true) {
+  if (silence === false) {
     console.log(`>> ${command}: ${result}`);
   }
   return result;

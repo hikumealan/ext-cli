@@ -7,6 +7,7 @@ const cli = require('./src/cli');
 
 const { engines } = packageJSON || {};
 const { node, npm } = engines || {};
+// const { data } = utils.parseJSON(utils.execSync({ command: utils.commands('version:npm') }));
 // Gather versions
 const versions = {
   nodeMinVersion: utils.getSemanticVersion((node || '').split(' ')[0]),
@@ -16,7 +17,6 @@ const versions = {
   npmVersion: utils.getSemanticVersion(
     utils.execSync({
       command: utils.commands('version:npm'),
-      silence: true,
     })
   ),
   npmMaxVersion: utils.getSemanticVersion((npm || '').split(' ')[1]),

@@ -109,13 +109,16 @@ const projectOptions = (next) => {
   let templates = [];
   try {
     // Load Templates remotely
-    const results = utils.execSync({
-      command: utils.commands('template:list'),
-      replacements: {
-        $npm_config_cli: utils.getPackageName(),
-        $npm_dir_path: process.argv[1],
+    const results = utils.execSync(
+      {
+        command: utils.commands('template:list'),
+        replacements: {
+          $npm_config_cli: utils.getPackageName(),
+          $npm_dir_path: process.argv[1],
+        },
       },
-    });
+      false
+    );
     const { data } = utils.parseJSON(results);
     if (!Array.isArray(data)) {
       throw new Error('Not an Array');
@@ -237,14 +240,17 @@ const projectComplete = () => {
   try {
     utils.log(`Cloning template files from ${template} - This may take a few minutes.`);
     // TODO: look at git clone of sub-folder
-    const results = utils.execSync({
-      command: utils.commands('template:get'),
-      replacements: {
-        $npm_config_cli: utils.getPackageName(),
-        $npm_dir_path: process.argv[1],
-        $npm_config_template: template,
+    const results = utils.execSync(
+      {
+        command: utils.commands('template:get'),
+        replacements: {
+          $npm_config_cli: utils.getPackageName(),
+          $npm_dir_path: process.argv[1],
+          $npm_config_template: template,
+        },
       },
-    });
+      false
+    );
     const { data } = utils.parseJSON(results);
     if (!Array.isArray(data)) {
       throw new Error('Not an Array');
