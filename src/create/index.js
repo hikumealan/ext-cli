@@ -109,7 +109,7 @@ const projectOptions = (next) => {
   let templates = [];
   try {
     // Load Templates remotely
-    const results = utils.execSync(utils.commands['template:list'], {
+    const results = utils.execSync(utils.commands('template:list'), {
       $npm_config_cli: utils.getPackageName(),
       $npm_dir_path: process.argv[1],
     });
@@ -180,7 +180,7 @@ const projectSetup = (next) => {
   const opts = STATE.opts;
   // PROJECT PREP
   utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-  const prescript = utils.commands[`precreate:${framework}`];
+  const prescript = utils.commands(`precreate:${framework}`);
   console.log(`PRESCRIPT: ${prescript}`);
   if (prescript) {
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
@@ -199,7 +199,7 @@ const projectSetup = (next) => {
     process.chdir(`./${project}`);
   }
   utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-  const script = utils.commands[`create:${framework}`];
+  const script = utils.commands(`create:${framework}`);
   console.log(`SCRIPT: ${script}`);
   if (script) {
     const cmd = `${script}${(opts || []).length ? ' ' + opts.join(' ') : ''}`;
@@ -234,7 +234,7 @@ const projectComplete = () => {
   try {
     utils.log(`Cloning template files from ${template} - This may take a few minutes.`);
     // TODO: look at git clone of sub-folder
-    const results = utils.execSync(utils.commands['template:get'], {
+    const results = utils.execSync(utils.commands('template:get'), {
       $npm_config_cli: utils.getPackageName(),
       $npm_dir_path: process.argv[1],
       $npm_config_template: template,
@@ -304,7 +304,7 @@ const projectComplete = () => {
   // PROJECT COMPLETE
   process.chdir(`./${project}`);
   utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-  const postscript = utils.commands[`postcreate:${framework}`];
+  const postscript = utils.commands(`postcreate:${framework}`);
   console.log(`POSTSCRIPT: ${postscript}`);
   if (postscript) {
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
@@ -317,7 +317,7 @@ const projectComplete = () => {
     );
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
   }
-  const cmd = utils.commands[`postcreate`];
+  const cmd = utils.commands(`postcreate`);
   if (cmd) {
     utils.execSync(cmd, null, true);
   }

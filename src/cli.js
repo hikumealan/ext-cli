@@ -73,7 +73,7 @@ module.exports = {
         const currentVersion = utils.getSemanticVersion(utils.getPackageVersion());
         // check the server for the latest cli version
         const latestVersion = utils.getSemanticVersion(
-          utils.execSync(utils.commands['version:npx'], {
+          utils.execSync(utils.commands('version:npx'), {
             $npm_config_cli: utils.getPackageName(),
             $npm_dir_path: process.argv[1],
           })

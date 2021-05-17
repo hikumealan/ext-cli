@@ -46,8 +46,8 @@ const ask = {
     this.cli = null;
   },
 };
-const commands = () => {
-  return packageJSON.commands || {};
+const commands = (cmd) => {
+  return ((packageJSON || {}).commands || {})[cmd] || '';
 };
 const execSync = (command, replacements, stdio) => {
   let result;
