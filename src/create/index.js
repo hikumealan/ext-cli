@@ -189,7 +189,7 @@ const projectSetup = (next) => {
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
     utils.execSync(prescript, {
       $npm_config_cli: ((process || {}).env || {}).npm_package_name || name,
-    });
+    }, true);
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
   }
   // PROJECT SETUP
@@ -206,7 +206,7 @@ const projectSetup = (next) => {
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
     utils.execSync(cmd, {
       $npm_config_cli: ((process || {}).env || {}).npm_package_name || name,
-    });
+    }, true);
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
   }
   // PROJECT FOLDER UPDATES
@@ -306,10 +306,10 @@ const projectComplete = () => {
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
     utils.execSync(postscript, {
       $npm_config_cli: ((process || {}).env || {}).npm_package_name || name,
-    });
+    }, true);
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
   }
-  utils.execSync('npm i');
+  utils.execSync('npm i', null, true);
   process.chdir(`../`);
   utils.log(`SUCCESS:: Project was generated successfully!`);
   utils.log(`Check it out @ ${process.cwd()}`);

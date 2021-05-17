@@ -45,27 +45,24 @@ const ask = {
     this.cli = null;
   },
 };
-const execSync = (command, replacements, preserveFormat) => {
+const execSync = (command, replacements, stdio) => {
   let result;
-  if (!_.isEmpty(replacements)) {
+  if (_.isPlainObject(replacements) && !_.isEmpty(replacements)) {
     for (const [key, value] of Object.entries(replacements)) {
       command = replaceAll(command, key, value);
     }
   }
   try {
-    console.log();
-    console.log();
-    console.log(`>> ${command}`);
-    console.log();
-    console.log();
-    result = child_process.execSync(command).toString();
-    // result = child_process.execSync(command, { stdio: 'inherit' }).toString();
-    if (!preserveFormat) {
+    if (stdio) {
+      child_process.execSync(command, { stdio: 'inherit' })
+    } else {
+      result = child_process.execSync(command).toString();
       result = replaceAll(result, '\n', '');
     }
   } catch (e) {
     // result = e;
   }
+  console.log(`>> ${command}: ${result}`);
   return result;
 };
 const getSemanticVersion = (version) => {
