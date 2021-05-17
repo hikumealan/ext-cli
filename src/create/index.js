@@ -109,9 +109,12 @@ const projectOptions = (next) => {
   let templates = [];
   try {
     // Load Templates remotely
-    const results = utils.execSync(utils.commands('template:list'), {
-      $npm_config_cli: utils.getPackageName(),
-      $npm_dir_path: process.argv[1],
+    const results = utils.execSync({
+      command: utils.commands('template:list'),
+      replacements: {
+        $npm_config_cli: utils.getPackageName(),
+        $npm_dir_path: process.argv[1],
+      },
     });
     const { data } = utils.parseJSON(results);
     if (!Array.isArray(data)) {
@@ -184,13 +187,13 @@ const projectSetup = (next) => {
   console.log(`PRESCRIPT: ${prescript}`);
   if (prescript) {
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-    utils.execSync(
-      prescript,
-      {
+    utils.execSync({
+      command: prescript,
+      replacements: {
         $npm_config_project: project,
       },
-      true
-    );
+      stdio: true,
+    });
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
   }
   // PROJECT SETUP
@@ -205,13 +208,13 @@ const projectSetup = (next) => {
     const cmd = `${script}${(opts || []).length ? ' ' + opts.join(' ') : ''}`;
     console.log(`CMD: ${cmd}`);
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-    utils.execSync(
-      cmd,
-      {
+    utils.execSync({
+      command: cmd,
+      replacements: {
         $npm_config_project: project,
       },
-      true
-    );
+      stdio: true,
+    });
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
   }
   // PROJECT FOLDER UPDATES
@@ -234,10 +237,13 @@ const projectComplete = () => {
   try {
     utils.log(`Cloning template files from ${template} - This may take a few minutes.`);
     // TODO: look at git clone of sub-folder
-    const results = utils.execSync(utils.commands('template:get'), {
-      $npm_config_cli: utils.getPackageName(),
-      $npm_dir_path: process.argv[1],
-      $npm_config_template: template,
+    const results = utils.execSync({
+      command: utils.commands('template:get'),
+      replacements: {
+        $npm_config_cli: utils.getPackageName(),
+        $npm_dir_path: process.argv[1],
+        $npm_config_template: template,
+      },
     });
     const { data } = utils.parseJSON(results);
     if (!Array.isArray(data)) {
@@ -308,18 +314,21 @@ const projectComplete = () => {
   console.log(`POSTSCRIPT: ${postscript}`);
   if (postscript) {
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-    utils.execSync(
-      postscript,
-      {
+    utils.execSync({
+      command: postscript,
+      replacements: {
         $npm_config_project: project,
       },
-      true
-    );
+      stdio: true,
+    });
     utils.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
   }
   const cmd = utils.commands(`postcreate`);
   if (cmd) {
-    utils.execSync(cmd, null, true);
+    utils.execSync({
+      command: cmd,
+      stdio: true,
+    });
   }
   process.chdir(`../`);
   utils.log(`SUCCESS:: Project was generated successfully!`);

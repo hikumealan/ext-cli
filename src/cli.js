@@ -73,11 +73,16 @@ module.exports = {
         const currentVersion = utils.getSemanticVersion(utils.getPackageVersion());
         // check the server for the latest cli version
         const latestVersion = utils.getSemanticVersion(
-          utils.execSync(utils.commands('version:npx'), {
-            $npm_config_cli: utils.getPackageName(),
-            $npm_dir_path: process.argv[1],
+          utils.execSync({
+            command: utils.commands('version:cli'),
+            replacements: {
+              $npm_config_cli: utils.getPackageName(),
+              $npm_dir_path: process.argv[1],
+            },
           })
         );
+        console.log(`CURRENT: ${currentVersion}`);
+        console.log(`LATEST: ${latestVersion}`);
         if (currentVersion < latestVersion) {
           // CLI version is out-of-date -> forward request on via npx
           utils.log(`Nexus CLI upgrade available - Please upgrade at your earliest convenience.`, 'error');

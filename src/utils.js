@@ -49,7 +49,7 @@ const ask = {
 const commands = (cmd) => {
   return ((packageJSON || {}).commands || {})[cmd] || '';
 };
-const execSync = (command, replacements, stdio) => {
+const execSync = ({ command, replacements, stdio, silence }) => {
   let result;
   if (_.isPlainObject(replacements) && !_.isEmpty(replacements)) {
     for (const [key, value] of Object.entries(replacements)) {
@@ -57,7 +57,7 @@ const execSync = (command, replacements, stdio) => {
     }
   }
   try {
-    if (stdio) {
+    if (stdio === true) {
       child_process.execSync(command, { stdio: 'inherit' });
     } else {
       result = child_process.execSync(command).toString();
@@ -66,7 +66,9 @@ const execSync = (command, replacements, stdio) => {
   } catch (e) {
     // result = e;
   }
-  console.log(`>> ${command}: ${result}`);
+  if (silence === true) {
+    console.log(`>> ${command}: ${result}`);
+  }
   return result;
 };
 const getPackageName = () => {

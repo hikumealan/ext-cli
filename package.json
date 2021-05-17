@@ -70,7 +70,7 @@
     "version:node": "node --version",
     "version:npm": "npm --version",
     "version:npx:backup": "npx --userconfig $npm_dir_path/.npmrc $npm_config_cli --version",
-    "version:npx": "npx $npm_config_cli --version",
+    "version:cli": "npx $npm_config_cli --version",
     "version:package": "node . --version"
   }
 }

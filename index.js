@@ -13,7 +13,12 @@ const versions = {
   nodeVersion: utils.getSemanticVersion(((process || {}).versions || {}).node),
   nodeMaxVersion: utils.getSemanticVersion((node || '').split(' ')[1]),
   npmMinVersion: utils.getSemanticVersion((npm || '').split(' ')[0]),
-  npmVersion: utils.getSemanticVersion(utils.execSync(utils.commands('version:npm'))),
+  npmVersion: utils.getSemanticVersion(
+    utils.execSync({
+      command: utils.commands('version:npm'),
+      silence: true,
+    })
+  ),
   npmMaxVersion: utils.getSemanticVersion((npm || '').split(' ')[1]),
 };
 // Check versions
