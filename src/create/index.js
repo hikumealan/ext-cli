@@ -121,6 +121,8 @@ const projectOptions = (next) => {
       },
       false
     );
+
+    console.log(`RESULTS: ${results}`);
     const { data } = utils.parseJSON(results);
     if (!Array.isArray(data)) {
       throw new Error('Not an Array');
