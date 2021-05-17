@@ -1,49 +1,43 @@
 #!/usr/bin/env node
 
 'use strict';
-const {execSync} = require('child_process');
 const packageJSON = require('./package.json');
-const {init, processHandler} = require('./bin/cli');
+const { utils } = require('./src/utils');
+const cli = require('./src/cli');
 
-process.on('SIGINT', () => {
-    processHandler('SIGINT', arguments);
-});
-process.on('uncaughtException', () => {
-    processHandler('uncaughtException', arguments);
-});
-process.on('unhandledRejection', () => {
-    processHandler('unhandledRejection', arguments);
-});
-process.on('exit', () => {
-    processHandler('exit', arguments);
-});
-
-// Check engines versions
-const {node, npm} = packageJSON.engines || {};
+const { commands, engines } = packageJSON || {};
+const { node, npm } = engines || {};
+// Gather versions
 const versions = {
-    nodeMinVersion: ((node || '').split(' ')[0] || '').replace(/[^0-9\.-]+/g, ''),
-    nodeVersion: process.versions.node,
-    nodeMaxVersion: ((node || '').split(' ')[1] || '').replace(/[^0-9\.-]+/g, ''),
-    npmMinVersion: ((npm || '').split(' ')[0] || '').replace(/[^0-9\.-]+/g, ''),
-    npmVersion: execSync(`npm --version`).toString().replace(/[^0-9\.-]+/g, ''),
-    npmMaxVersion: ((npm || '').split(' ')[1] || '').replace(/[^0-9\.-]+/g, ''),
+  nodeMinVersion: utils.getSemanticVersion((node || '').split(' ')[0]),
+  nodeVersion: utils.getSemanticVersion(((process || {}).versions || {}).node),
+  nodeMaxVersion: utils.getSemanticVersion((node || '').split(' ')[1]),
+  npmMinVersion: utils.getSemanticVersion((npm || '').split(' ')[0]),
+  npmVersion: utils.getSemanticVersion(utils.execSync(commands['version:npm'])),
+  npmMaxVersion: utils.getSemanticVersion((npm || '').split(' ')[1]),
 };
+// Check versions
 const checks = {
-    nodeMinMet: (versions.nodeMinVersion ? versions.nodeVersion >= versions.nodeMinVersion : true),
-    nodeMaxMet: (versions.nodeMaxVersion ? versions.nodeVersion <= versions.nodeMaxVersion : true),
-    npmMinMet: (versions.npmMinVersion ? versions.npmVersion >= versions.npmMinVersion : true),
-    npmMaxMet: (versions.npmMaxVersion ? versions.npmVersion <= versions.npmMaxVersion : true),
+  nodeMinMet: versions.nodeMinVersion !== '0.0.0' ? versions.nodeVersion >= versions.nodeMinVersion : true,
+  nodeMaxMet: versions.nodeMinVersion !== '0.0.0' ? versions.nodeVersion <= versions.nodeMaxVersion : true,
+  npmMinMet: versions.npmMinVersion !== '0.0.0' ? versions.npmVersion >= versions.npmMinVersion : true,
+  npmMaxMet: versions.npmMaxVersion !== '0.0.0' ? versions.npmVersion <= versions.npmMaxVersion : true,
 };
 // For more info about node and npm versions checkout https://nodejs.org/dist/index.json
-if (checks.nodeMinMet && checks.nodeMaxMet && checks.npmMinMet && checks.npmMaxMet){
-    init(packageJSON);
+if (checks.nodeMinMet && checks.nodeMaxMet && checks.npmMinMet && checks.npmMaxMet) {
+  // OS Env checks out and is good to process cmd
+  cli.init(packageJSON);
 } else {
-    console.error('');
-    console.error('========================================================');
-    console.error('ERROR: The required versions are not met.');
-    console.table(versions);
-    console.error('Please update your versions and try again.');
-    console.error('========================================================');
-    console.error('');
-    process.exit(999)
+  console.error('');
+  console.error('**************************************************************');
+  console.error('ERROR: System requirements not met.');
+  if (!checks.nodeMinMet || !checks.nodeMaxMet) {
+    console.error(`\t NODE version [${versions.nodeVersion}] does not meet: ${node}`);
+  }
+  if (!checks.npmMinMet || !checks.npmMaxMet) {
+    console.error(`\t NPM version [${versions.npmVersion}] does not meet: ${npm}`);
+  }
+  console.error('\nPlease update your system accordingly and try again.\n');
+  console.error('**************************************************************');
+  console.error('');
 }

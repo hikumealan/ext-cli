@@ -15,19 +15,19 @@
 // } = require('./utils');
 
 const init = '';
-const main = (req, next=init) => {
-    next = typeof next === 'string' ? next : '';
-    switch (next) {
-        case '':
-            // TODO:
-            break;
-        default:
-            main(req, init);
-            break;
-    }
+const main = (req, next = init) => {
+  next = typeof next === 'string' ? next : '';
+  switch (next) {
+    case '':
+      // TODO:
+      break;
+    default:
+      main(req, init);
+      break;
+  }
 };
 
 // EXPORTS
 module.exports = {
-    main
+  main,
 };
