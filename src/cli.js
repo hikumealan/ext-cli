@@ -7,6 +7,14 @@ const STATE = {
   options: ['create', 'generate', 'template', '--version', '--help'],
 };
 
+// utils.event.on('get-help', () => {
+//   utils.log(`Help documentation goes here.`);
+//   process.exit();
+// });
+// utils.event.on('get-version', () => {
+//   utils.log(utils.getPackageVersion());
+//   process.exit();
+// });
 const getHelp = () => {
   utils.log(`Help documentation goes here.`);
   process.exit();
@@ -20,6 +28,7 @@ utils.event.on('request-main', (req) => {
   switch (cmd) {
     case 'create': {
       create.init(req);
+      // utils.event.emit('create-request', req);
       break;
     }
     case 'generate': {
@@ -30,6 +39,7 @@ utils.event.on('request-main', (req) => {
     }
     case 'template': {
       template.init(req);
+      // utils.event.emit('template-request', req);
       break;
     }
     case '--version': {
@@ -64,13 +74,15 @@ utils.event.on('request-prompt', (req) => {
 });
 
 module.exports = {
-  init: (packageJSON) => {
+  init: (pkg) => {
+    // const req = utils.parseRequest(packageJSON);
     if ((process || {}).argv && Array.isArray(process.argv) && process.argv.length > 2) {
       // Command has been received
-      const params = process.argv.slice(2);
+      const params = process.argv.length > 2 ? process.argv.slice(2) : [];
       const cmd = params[0];
       if (cmd === '--version') {
         getVersion();
+        // utils.event.emit('get-version');
       } else {
         // const localVersion = utils.getSemanticVersion(utils.getPackageVersion());
         // // check the server for the latest cli version
@@ -90,7 +102,7 @@ module.exports = {
         //   // process.exit();
         // }
         // CLI version checks out and is good to process the command
-        const request = {
+        utils.event.emit('request-main', {
           cmd,
           env: {
             argv: process.argv,
@@ -98,14 +110,14 @@ module.exports = {
             cwd: process.cwd(),
             dir: __dirname,
             loc: __filename,
-            pkg: packageJSON,
+            pkg,
           },
-          params: process.argv.length > 2 ? process.argv.slice(2) : [],
-        };
-        utils.event.emit('request-main', request);
+          params,
+        });
       }
     } else {
       getHelp();
+      // utils.event.emit('get-help');
     }
   },
 };

@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { utils } = require('../utils');
+const { getTemplateList, getTemplateDetails } = require('../template');
 const STATE = {
   templatePath: '../../.templates',
   init: 'get-project-framework',
@@ -106,42 +107,6 @@ const main = (next) => {
 
 const projectOptions = (next) => {
   const options = STATE.req.options;
-  let templates = [];
-  try {
-    // Load Templates remotely
-    const results = utils.execSync(
-      {
-        command: utils.commands('template:list'),
-        replacements: {
-          $npm_config_cli: utils.getPackageName(),
-          $npm_dir_path: process.argv[1],
-        },
-      },
-      false
-    );
-    const { data } = utils.parseJSON(results);
-    if (!Array.isArray(data)) {
-      throw new Error('Not an Array');
-    }
-    templates = data;
-  } catch (e) {
-    // Load Templates locally
-    templates = [];
-    const location = path.join(__dirname, `${STATE.templatePath}/`);
-    if (fs.existsSync(location)) {
-      templates = fs
-        .readdirSync(location)
-        .map((file) => {
-          return path.join(location, file);
-        })
-        .filter((loc) => {
-          return fs.statSync(loc).isDirectory();
-        });
-      templates.forEach((item, index) => {
-        templates[index] = item.replace(location, '');
-      });
-    }
-  }
   options.forEach((option) => {
     const [key, value] = option.split('=');
     // Filter out Nexus options
@@ -157,25 +122,48 @@ const projectOptions = (next) => {
         break;
     }
   });
+  const { data } = getTemplateList();
+  const templates = data;
+  // try {
+  //   // Load Templates remotely
+  //   const results = utils.execSync(
+  //     {
+  //       command: utils.commands('template:list'),
+  //       replacements: {
+  //         $npm_config_cli: utils.getPackageName(),
+  //         $npm_dir_path: process.argv[1],
+  //       },
+  //     },
+  //     false
+  //   );
+  //   const { data } = utils.parseJSON(results);
+  //   if (!Array.isArray(data)) {
+  //     throw new Error('Not an Array');
+  //   }
+  //   templates = data;
+  // } catch (e) {
+  //   // Load Templates locally
+  //   templates = [];
+  //   const location = path.join(__dirname, `${STATE.templatePath}/`);
+  //   if (fs.existsSync(location)) {
+  //     templates = fs
+  //       .readdirSync(location)
+  //       .map((file) => {
+  //         return path.join(location, file);
+  //       })
+  //       .filter((loc) => {
+  //         return fs.statSync(loc).isDirectory();
+  //       });
+  //     templates.forEach((item, index) => {
+  //       templates[index] = item.replace(location, '');
+  //     });
+  //   }
+  // }
   // Validate template
   STATE.req.template = STATE.req.template ? STATE.req.template : `${STATE.req.framework}`;
   if (Array.isArray(templates) && templates.length) {
     STATE.req.template = templates.includes(STATE.req.template) ? STATE.req.template : `${STATE.req.framework}`;
   }
-  // Check if token is needed
-  // if (!STATE.req.token) {
-  //   utils.ask.question(`Do you need to provide a .nmprc token? (Yes|No)\n`, (input) => {
-  //     utils.ask.close();
-  //     input = (input || '').toLowerCase();
-  //     if (input.startsWith('y')) {
-  //       main('get-project-token');
-  //     } else {
-  //       main(next);
-  //     }
-  //   });
-  // } else {
-  //   main(next);
-  // }
   main(next);
 };
 const projectSetup = (next) => {
@@ -220,6 +208,18 @@ const projectSetup = (next) => {
     const data = utils.npmrc(undefined, undefined, token);
     fs.writeFileSync(`./${project}/.npmrc`, data);
   }
+  // else {
+  //   // Check if token is needed
+  //   utils.ask.question(`Do you need to provide a .nmprc token? (Yes|No)\n`, (input) => {
+  //     utils.ask.close();
+  //     input = (input || '').toLowerCase();
+  //     if (input.startsWith('y')) {
+  //       main('get-project-token');
+  //     } else {
+  //       main(next);
+  //     }
+  //   });
+  // }
   main(next);
 };
 const projectComplete = () => {
@@ -228,24 +228,9 @@ const projectComplete = () => {
   const project = STATE.req.project;
   const template = STATE.req.template;
   const pkgJSON = utils.parseJSON(fs.readFileSync(`./${project}/package.json`).toString());
-  try {
-    utils.log(`Cloning template files from ${template} - This may take a few minutes.`);
-    // TODO: look at git clone of sub-folder
-    const results = utils.execSync(
-      {
-        command: utils.commands('template:get'),
-        replacements: {
-          $npm_config_cli: utils.getPackageName(),
-          $npm_dir_path: process.argv[1],
-          $npm_config_template: template,
-        },
-      },
-      false
-    );
-    const { data } = utils.parseJSON(results);
-    if (!Array.isArray(data)) {
-      throw new Error('Not an Array');
-    }
+  utils.log(`Cloning template files from ${template} - This may take a few minutes.`);
+  const { data } = getTemplateDetails(template, true);
+  if (Array.isArray(data) && data.length) {
     utils.log(`Copying ${data.length} file(s):`);
     data.forEach((file) => {
       const keys = Object.keys(file);
@@ -256,54 +241,84 @@ const projectComplete = () => {
         utils.writeDirFileSync(filepath, data, pkgJSON);
       });
     });
-    // TODO: Get individual files one at a time from the template
-    // TODO: refactor to use replaceAll
-    // const script = (commands[`npx:template:info`] || '').replace(/\$npm_config_cli/g, STATE.req.env.repo).replace(/\$npm_config_template/g, template);
-    // const results = execSync(`${script}`).toString();
-    // const {data} = utils.parseJSON(results);
-    // if (data.length < 50) {
-    //     utils.log(`Cloning template files from ${template}:`);
-    //     data.forEach((file) => {
-    //         const directory = file.split('/');
-    //         const filename = directory.pop();
-    //         const dir = directory.join('/');
-    //         if (dir) {
-    //             fs.mkdirSync(dir, {recursive: true});
-    //         }
-    //         // TODO: refactor to use replaceAll
-    //         const script = (commands[`npx:template:get-file`] || '').replace(/\$npm_config_cli/g, STATE.req.env.repo).replace(/\$npm_config_template_file/g, `${template}/${file}`);
-    //         const content = execSync(`${script}`).toString();
-    //         const {data} = utils.parseJSON(content);
-    //         const location = path.join(dir, filename === '_gitignore' ? '.gitignore' : filename);
-    //         utils.log(`Copying ${location}`);
-    //         fs.writeFileSync(location, data);
-    //     });
-    // } else {
-    //     // TODO: This will take too long
-    //     utils.log(data);
-    //     const message = 'Too many files to copy remotely.';
-    //     utils.log(message, 'error');
-    //     throw new Error(message);
-    // }
-  } catch (e) {
-    const local = path.join(__dirname, STATE.templatePath, template);
-    if (fs.existsSync(local)) {
-      const files = utils.readdirSyncRecursively(local);
-      files.forEach((file) => {
-        const data = fs.readFileSync(file);
-        const location = file.replace(`${local}/`, '').split('/');
-        const filename = location.pop();
-        const directory = `${project}/${location.join('/')}`;
-        const filepath = path.join(directory, filename);
-        utils.writeDirFileSync(filepath, data, pkgJSON);
-      });
-    } else {
-      // TODO: ?
-      const message = 'Local files not found.';
-      utils.log(message, 'error');
-      throw new Error(message);
-    }
+  } else {
+    utils.log(`No files to be cloned.`);
   }
+  // try {
+  //   // TODO: look at git clone of sub-folder
+  //   const results = utils.execSync(
+  //     {
+  //       command: utils.commands('template:get'),
+  //       replacements: {
+  //         $npm_config_cli: utils.getPackageName(),
+  //         $npm_dir_path: process.argv[1],
+  //         $npm_config_template: template,
+  //       },
+  //     },
+  //     false
+  //   );
+  //   const { data } = utils.parseJSON(results);
+  //   if (!Array.isArray(data)) {
+  //     throw new Error('Not an Array');
+  //   }
+  //   utils.log(`Copying ${data.length} file(s):`);
+  //   data.forEach((file) => {
+  //     const keys = Object.keys(file);
+  //     keys.forEach((key) => {
+  //       const data = file[key];
+  //       const filepath = path.join(project, key);
+  //       // TODO: Binary files don't work
+  //       utils.writeDirFileSync(filepath, data, pkgJSON);
+  //     });
+  //   });
+  //   // TODO: Get individual files one at a time from the template
+  //   // TODO: refactor to use replaceAll
+  //   // const script = (commands[`npx:template:info`] || '').replace(/\$npm_config_cli/g, STATE.req.env.repo).replace(/\$npm_config_template/g, template);
+  //   // const results = execSync(`${script}`).toString();
+  //   // const {data} = utils.parseJSON(results);
+  //   // if (data.length < 50) {
+  //   //     utils.log(`Cloning template files from ${template}:`);
+  //   //     data.forEach((file) => {
+  //   //         const directory = file.split('/');
+  //   //         const filename = directory.pop();
+  //   //         const dir = directory.join('/');
+  //   //         if (dir) {
+  //   //             fs.mkdirSync(dir, {recursive: true});
+  //   //         }
+  //   //         // TODO: refactor to use replaceAll
+  //   //         const script = (commands[`npx:template:get-file`] || '').replace(/\$npm_config_cli/g, STATE.req.env.repo).replace(/\$npm_config_template_file/g, `${template}/${file}`);
+  //   //         const content = execSync(`${script}`).toString();
+  //   //         const {data} = utils.parseJSON(content);
+  //   //         const location = path.join(dir, filename === '_gitignore' ? '.gitignore' : filename);
+  //   //         utils.log(`Copying ${location}`);
+  //   //         fs.writeFileSync(location, data);
+  //   //     });
+  //   // } else {
+  //   //     // TODO: This will take too long
+  //   //     utils.log(data);
+  //   //     const message = 'Too many files to copy remotely.';
+  //   //     utils.log(message, 'error');
+  //   //     throw new Error(message);
+  //   // }
+  // } catch (e) {
+  //   const local = path.join(__dirname, STATE.templatePath, template);
+  //   if (fs.existsSync(local)) {
+  //     const files = utils.readdirSyncRecursively(local);
+  //     files.forEach((file) => {
+  //       const data = fs.readFileSync(file);
+  //       const location = file.replace(`${local}/`, '').split('/');
+  //       const filename = location.pop();
+  //       const directory = `${project}/${location.join('/')}`;
+  //       const filepath = path.join(directory, filename);
+  //       utils.writeDirFileSync(filepath, data, pkgJSON);
+  //     });
+  //   } else {
+  //     // TODO: ?
+  //     const message = 'Local files not found.';
+  //     utils.log(message, 'error');
+  //     throw new Error(message);
+  //   }
+  // }
   // PROJECT COMPLETE
   process.chdir(`./${project}`);
   const postscript = utils.commands(`postcreate:${framework}`);

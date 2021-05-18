@@ -9,6 +9,50 @@ const STATE = {
   ignoreFiles: ['.DS_Store', 'Thumbs.db'],
 };
 
+const getTemplateDirectory = (location) => {
+  return fs.readdirSync(location)
+      .map((file) => {
+        return path.join(location, file);
+      })
+      .filter((loc) => {
+        return fs.statSync(loc).isDirectory();
+      });
+};
+const getFileDetails = (template, filepath, returnData) => {
+  if (typeof template === 'string' && template.length) {
+    const location = path.join(__dirname, `${STATE.templatePath}/${template}`);
+    const file = filepath.split('/');
+    const filename = file.pop();
+    const directory = file.join('/');
+    if (fs.existsSync(location)) {
+      const index = _.findIndex(STATE.ignoreFiles, (ignoreFilename) => {
+        // if filename is in the ignore list skip it
+        return ignoreFilename.toLowerCase() === filename.toLowerCase();
+      });
+      if (index === -1) {
+        if (returnData) {
+          const obj = {};
+          const file = path.join(location, directory, filename === '.gitignore' ? '_gitignore' : filename);
+          // TODO: Check if file is binary and write the data as binary
+          obj[filename === '_gitignore' ? '.gitignore' : filename] = fs.readFileSync(file).toString();
+          return obj;
+        } else {
+          return `${directory ? directory + '/' : ''}${filename === '_gitignore' ? '.gitignore' : filename}`;
+        }
+      } else {
+        // skip ignored files
+        return null;
+      }
+    } else {
+      // TODO: Location invalid
+      return null;
+    }
+  } else {
+    // TODO: Template invalid
+    return null;
+  }
+};
+
 const main = (options) => {
   let results = null;
   // template --use-cases => array of all the use cases
@@ -21,9 +65,10 @@ const main = (options) => {
     const [key, value] = option.split('=');
     switch (key.toLowerCase()) {
       case '--use-cases': {
-        // TODO: dynamically list all use cases
-        const data = STATE.useCases;
-        results = { data };
+        const data = getUseCaseList();
+        if (data) {
+          results = { ...data };
+        }
         break;
       }
       case '--list': {
@@ -34,58 +79,23 @@ const main = (options) => {
         break;
       }
       case '--info': {
-        if (value) {
-          const data = getTemplateDetails(value);
-          if (data) {
-            results = { ...data };
-          }
-        } else {
-          // TODO: Input Error
+        const data = getTemplateDetails(value);
+        if (data) {
+          results = { ...data };
         }
         break;
       }
       case '--get': {
-        if (value) {
-          const data = getTemplateDetails(value, true);
-          if (data) {
-            results = { ...data };
-          }
-        } else {
-          // TODO: Input Error
+        const data = getTemplateDetails(value, true);
+        if (data) {
+          results = { ...data };
         }
         break;
       }
       case '--get-file': {
-        if (value) {
-          const file = value.split('/');
-          const template = file.shift();
-          const name = file.pop();
-          const filename = name === '.gitignore' ? '_gitignore' : name;
-          const filepath = path.join(file.join('/'), filename);
-          const templates = getTemplateList();
-          // template list to validate against
-          if ((templates || {}).data && Array.isArray(templates.data) && templates.data.length) {
-            // validate template
-            const index = _.findIndex(templates.data, (templateName) => {
-              return templateName.toLowerCase() === template.toLowerCase();
-            });
-            if (index !== -1) {
-              const data = getFileDetails(template, filepath, true);
-              if (data) {
-                results = { ...data };
-              }
-            } else {
-              // TODO: Template invalid
-            }
-          } else {
-            // TODO: Template list is empty
-            const data = getFileDetails(template, filepath, true);
-            if (data) {
-              results = { ...data };
-            }
-          }
-        } else {
-          // TODO: Input Error
+        const data = getTemplateFileDetails(value, true);
+        if (data) {
+          results = { ...data };
         }
         break;
       }
@@ -106,17 +116,15 @@ const main = (options) => {
   }
 };
 
+const getUseCaseList = () => {
+  // TODO: dynamically list all use cases
+  const data = STATE.useCases;
+  return { data };
+};
 const getTemplateList = () => {
   const location = path.join(__dirname, `${STATE.templatePath}`);
   if (fs.existsSync(location)) {
-    const data = fs
-      .readdirSync(location)
-      .map((file) => {
-        return path.join(location, file);
-      })
-      .filter((loc) => {
-        return fs.statSync(loc).isDirectory();
-      });
+    const data = getTemplateDirectory(location);
     data.forEach((item, index) => {
       data[index] = item.replace(`${location}/`, '');
     });
@@ -125,53 +133,46 @@ const getTemplateList = () => {
     return { data: [] };
   }
 };
-
 const getTemplateDetails = (template, returnData) => {
-  const location = path.join(__dirname, `${STATE.templatePath}/${template}`);
-  if (fs.existsSync(location)) {
-    const data = [];
-    const files = utils.readdirSyncRecursively(location);
-    files.forEach((file) => {
-      const filepath = file.replace(`${location}/`, '');
-      const result = getFileDetails(template, filepath, returnData);
-      if (result) {
-        data.push(result);
-      }
-    });
-    return { data };
-  } else {
-    // TODO: Location invalid
-    return null;
-  }
-};
-
-const getFileDetails = (template, filepath, returnData) => {
-  const location = path.join(__dirname, `${STATE.templatePath}/${template}`);
-  const file = filepath.split('/');
-  const filename = file.pop();
-  const directory = file.join('/');
-  if (fs.existsSync(location)) {
-    const index = _.findIndex(STATE.ignoreFiles, (ignoreFilename) => {
-      // if filename is in the ignore list skip it
-      return ignoreFilename.toLowerCase() === filename.toLowerCase();
-    });
-    if (index === -1) {
-      if (returnData) {
-        const obj = {};
-        const file = path.join(location, directory, filename === '.gitignore' ? '_gitignore' : filename);
-        // TODO: Check if file is binary and write the data as binary
-        obj[filename === '_gitignore' ? '.gitignore' : filename] = fs.readFileSync(file).toString();
-        return obj;
-      } else {
-        return `${directory ? directory + '/' : ''}${filename === '_gitignore' ? '.gitignore' : filename}`;
-      }
+  if (typeof template === 'string' && template.length) {
+    const location = path.join(__dirname, `${STATE.templatePath}/${template}`);
+    if (fs.existsSync(location)) {
+      const data = [];
+      const files = utils.readdirSyncRecursively(location);
+      files.forEach((file) => {
+        const filepath = file.replace(`${location}/`, '');
+        const result = getFileDetails(template, filepath, returnData);
+        if (result) {
+          data.push(result);
+        }
+      });
+      return { data };
     } else {
-      // skip ignored files
-      return null;
+      // TODO: Location invalid
+      return { data: [] };
     }
   } else {
-    // TODO: Location invalid
-    return null;
+    // TODO: Template invalid
+    return { data: [] };
+  }
+};
+const getTemplateFileDetails = (value, returnData) => {
+  if (typeof value === 'string' && value.length) {
+    const file = value.split('/');
+    const template = file.shift();
+    const name = file.pop();
+    const filename = name === '.gitignore' ? '_gitignore' : name;
+    const filepath = path.join(file.join('/'), filename);
+    const data = getFileDetails(template, filepath, returnData);
+    if (data) {
+      return { data };
+    } else {
+      // TODO: Handle invalid
+      return { data: [] };
+    }
+  } else {
+    // TODO: Path invalid
+    return { data: [] };
   }
 };
 
@@ -187,5 +188,9 @@ const init = (req) => {
 };
 
 module.exports = {
+  getUseCaseList,
+  getTemplateList,
+  getTemplateDetails,
+  getTemplateFileDetails,
   init,
 };

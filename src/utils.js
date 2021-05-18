@@ -193,7 +193,6 @@ const readdirSyncRecursively = (location, result = []) => {
   });
   return result;
 };
-
 const replaceAll = (str, key, value) => {
   str = typeof str === 'string' ? str : '';
   // String.prototype.replaceAll = function(key, value) {
