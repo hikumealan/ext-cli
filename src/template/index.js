@@ -35,7 +35,7 @@ const getFileDetails = (template, filepath, returnData) => {
           const obj = {};
           const file = path.join(location, directory, filename === '.gitignore' ? '_gitignore' : filename);
           // TODO: Check if file is binary and write the data as binary
-          obj[dir] = fs.readFileSync(file).toString();
+          obj[dir] = fs.readFileSync(file, 'binary').toString();
           return obj;
         } else {
           return dir;
@@ -110,10 +110,10 @@ const main = (options) => {
     }
   }
   if (results) {
-    // wrapped output in tokens for parsing response only
-    utils.log(utils.separator);
+    // TODO: wrapped output in tokens for parsing response only
+    // utils.log(utils.separator);
     utils.log(JSON.stringify(results));
-    utils.log(utils.separator);
+    // utils.log(utils.separator);
   }
 };
 

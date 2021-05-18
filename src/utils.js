@@ -194,10 +194,10 @@ const readdirSyncRecursively = (location, result = []) => {
   return result;
 };
 const replaceAll = (str, key, value) => {
-  str = typeof str === 'string' ? str : '';
   // String.prototype.replaceAll = function(key, value) {
   //   return this.split(key).join(value);
   // };
+  str = typeof str === 'string' ? str : '';
   if (str) {
     if (typeof key === 'string' && typeof value === 'string') {
       str = str.split(key).join(value);
@@ -231,10 +231,10 @@ const writeDirFileSync = (filepath, data, pkgJSON) => {
     if (filename === 'package.json' && pkgJSON) {
       const pkg = JSON.parse(data);
       const merged = _.merge(pkg, pkgJSON);
-      fs.writeFileSync(filepath, JSON.stringify(merged, null, 2));
+      fs.writeFileSync(filepath, JSON.stringify(merged, null, 2),'binary');
     } else {
       // TODO: Check if file is binary and write the data as binary
-      fs.writeFileSync(filepath, data);
+      fs.writeFileSync(filepath, data,'binary');
     }
   } catch (e) {
     // TODO: Handle error
