@@ -230,19 +230,15 @@ const projectComplete = () => {
   const pkgJSON = utils.parseJSON(fs.readFileSync(`./${project}/package.json`).toString());
   utils.log(`Cloning template files from ${template} - This may take a few minutes.`);
   const { data } = getTemplateDetails(template, true);
-  console.log(data);
   if (Array.isArray(data) && data.length) {
     utils.log(`Copying ${data.length} file(s):`);
     data.forEach((file) => {
-      // console.log(file);
       const keys = Object.keys(file);
       keys.forEach((key) => {
-        // console.log(key);
         const data = file[key];
         const filepath = path.join(project, key);
-        // console.log(filepath);
         // TODO: Binary files don't work
-        // utils.writeDirFileSync(filepath, data, pkgJSON);
+        utils.writeDirFileSync(filepath, data, pkgJSON);
       });
     });
   } else {
