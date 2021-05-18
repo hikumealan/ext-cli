@@ -30,14 +30,15 @@ const getFileDetails = (template, filepath, returnData) => {
         return ignoreFilename.toLowerCase() === filename.toLowerCase();
       });
       if (index === -1) {
+        const dir = `${directory ? directory + '/' : ''}${filename === '_gitignore' ? '.gitignore' : filename}`;
         if (returnData) {
           const obj = {};
           const file = path.join(location, directory, filename === '.gitignore' ? '_gitignore' : filename);
           // TODO: Check if file is binary and write the data as binary
-          obj[filename === '_gitignore' ? '.gitignore' : filename] = fs.readFileSync(file).toString();
+          obj[dir] = fs.readFileSync(file).toString();
           return obj;
         } else {
-          return `${directory ? directory + '/' : ''}${filename === '_gitignore' ? '.gitignore' : filename}`;
+          return dir;
         }
       } else {
         // skip ignored files
