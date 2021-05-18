@@ -119,7 +119,7 @@ const log = (message, type) => {
 };
 const npmrc = (user = 'fso-to', id = '7bc545d8-bf8c-477e-bb91-17a982c30c2e', token, email) => {
   token = typeof token === 'string' ? token : '';
-  let content = `@nexus-ui-starter-kit:registry=https://fso-to.pkgs.visualstudio.com/7bc545d8-bf8c-477e-bb91-17a982c30c2e/_packaging/Nexus/npm/registry/
+  let content = `@nexus-ui-starter-kit:registry=https://$npm_config_username.pkgs.visualstudio.com/$npm_config_id/_packaging/Nexus/npm/registry/
 @nexus:registry=https://$npm_config_username.pkgs.visualstudio.com/$npm_config_id/_packaging/Nexus/npm/registry/
 @ey-xd:registry=https://pkgs.dev.azure.com/EYCTXD/_packaging/EYCTXD/npm/registry/
 @ey-studio-phl:registry=https://npm.ey-intuitive.com
@@ -208,9 +208,7 @@ const replaceAll = (str, key, value) => {
     return null;
   }
 };
-
 const separator = '####';
-
 const writeDirFileSync = (filepath, data, pkgJSON) => {
   try {
     const location = filepath.split('/');

@@ -335,9 +335,9 @@ const projectComplete = () => {
       stdio: true,
     });
   }
-  process.chdir(`../`);
   utils.log(`SUCCESS:: Project was generated successfully!`);
   utils.log(`Check it out @ ${process.cwd()}`);
+  process.chdir(`../`);
 };
 
 const init = (req) => {

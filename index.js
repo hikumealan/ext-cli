@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 
 'use strict';
-const packageJSON = require('./package.json');
-const { utils } = require('./src/utils');
 const cli = require('./src/cli');
-
+const { utils } = require('./src/utils');
+const packageJSON = require('./package.json');
 const { engines } = packageJSON || {};
 const { node, npm } = engines || {};
 // Gather versions

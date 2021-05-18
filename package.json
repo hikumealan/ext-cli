@@ -17,14 +17,17 @@
     "ext-cli": "./index.js"
   },
   "scripts": {
+    "build": "echo \"Error: no build specified\" && exit 1",
     "format": "npx prettier --write .",
     "lint": "npx eslint --fix .",
     "sort": "npx json-sort-cli **/*.json",
-    "start": "node ."
+    "start": "node .",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "lodash": "^4.17.21"
   },
+  "devDependencies": {},
   "engines": {
     "node": ">=10.0.0 <15",
     "npm": ">=5.2.0"
@@ -40,7 +43,6 @@
     "create:velocity": "npm init -y",
     "create:vue": "npx @vue/cli create $npm_config_project",
     "create:vue-ionic": "npx @ionic/cli start $npm_config_project blank --type=vue --no-deps",
-    "post-create:velocity": "git init && git add -A && git commit -m \"initial commit\"",
     "postcreate": "npm i",
     "postcreate:angular": "npm i @nexus/core @nexus/angular @ngrx/store",
     "postcreate:angular-ionic": "npm i @nexus/core @nexus/angular @ngrx/store",
@@ -48,6 +50,7 @@
     "postcreate:react": "npm i @nexus/core @nexus/react rxjs",
     "postcreate:react-ionic": "npm i @nexus/core @nexus/react redux-observable",
     "postcreate:react:backup": "npm i @nexus/core @nexus/react rxjs redux redux-observable",
+    "postcreate:velocity": "git init && git add -A && git commit -m \"initial commit\"",
     "postcreate:vue": "npm i @nexus/core @nexus/vue rxjs vue-rx",
     "postcreate:vue-ionic": "npm i @nexus/core @nexus/vue vue-rx rxjs",
     "precreate:angular": "",

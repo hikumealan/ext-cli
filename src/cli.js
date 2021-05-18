@@ -28,7 +28,6 @@ utils.event.on('request-main', (req) => {
   switch (cmd) {
     case 'create': {
       create.init(req);
-      // utils.event.emit('create-request', req);
       break;
     }
     case 'generate': {
@@ -39,11 +38,11 @@ utils.event.on('request-main', (req) => {
     }
     case 'template': {
       template.init(req);
-      // utils.event.emit('template-request', req);
       break;
     }
     case '--version': {
       getVersion();
+      // utils.event.emit('get-version');
       break;
     }
     case '--help': {
