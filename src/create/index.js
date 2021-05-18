@@ -237,7 +237,6 @@ const projectComplete = () => {
       keys.forEach((key) => {
         const data = file[key];
         const filepath = path.join(project, key);
-        // TODO: Binary files don't work
         utils.writeDirFileSync(filepath, data, pkgJSON);
       });
     });
@@ -245,7 +244,7 @@ const projectComplete = () => {
     utils.log(`No files to be cloned.`);
   }
   // try {
-  //   // TODO: look at git clone of sub-folder
+  //   // look at git clone of sub-folder
   //   const results = utils.execSync(
   //     {
   //       command: utils.commands('template:get'),
@@ -267,12 +266,11 @@ const projectComplete = () => {
   //     keys.forEach((key) => {
   //       const data = file[key];
   //       const filepath = path.join(project, key);
-  //       // TODO: Binary files don't work
   //       utils.writeDirFileSync(filepath, data, pkgJSON);
   //     });
   //   });
-  //   // TODO: Get individual files one at a time from the template
-  //   // TODO: refactor to use replaceAll
+  //   // Get individual files one at a time from the template
+  //   // refactor to use replaceAll
   //   // const script = (commands[`npx:template:info`] || '').replace(/\$npm_config_cli/g, STATE.req.env.repo).replace(/\$npm_config_template/g, template);
   //   // const results = execSync(`${script}`).toString();
   //   // const {data} = utils.parseJSON(results);
@@ -285,7 +283,7 @@ const projectComplete = () => {
   //   //         if (dir) {
   //   //             fs.mkdirSync(dir, {recursive: true});
   //   //         }
-  //   //         // TODO: refactor to use replaceAll
+  //   //         // refactor to use replaceAll
   //   //         const script = (commands[`npx:template:get-file`] || '').replace(/\$npm_config_cli/g, STATE.req.env.repo).replace(/\$npm_config_template_file/g, `${template}/${file}`);
   //   //         const content = execSync(`${script}`).toString();
   //   //         const {data} = utils.parseJSON(content);
@@ -294,7 +292,7 @@ const projectComplete = () => {
   //   //         fs.writeFileSync(location, data);
   //   //     });
   //   // } else {
-  //   //     // TODO: This will take too long
+  //   //     // This will take too long
   //   //     utils.log(data);
   //   //     const message = 'Too many files to copy remotely.';
   //   //     utils.log(message, 'error');
@@ -313,7 +311,6 @@ const projectComplete = () => {
   //       utils.writeDirFileSync(filepath, data, pkgJSON);
   //     });
   //   } else {
-  //     // TODO: ?
   //     const message = 'Local files not found.';
   //     utils.log(message, 'error');
   //     throw new Error(message);

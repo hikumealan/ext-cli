@@ -74,13 +74,11 @@ const execSync = ({ command, replacements, stdio }, silence = true) => {
 };
 const getPackageName = () => {
   // ((process || {}).env || {}).npm_package_name
-  let name = packageJSON.name || '';
-  return 'https://github.com/hikumealan/ext-cli' || name;
+  return packageJSON.name || '';
 };
 const getPackageVersion = () => {
   // ((process || {}).env || {}).npm_package_version
-  let version = packageJSON.version || '';
-  return version;
+  return packageJSON.version || '';
 };
 const getSemanticVersion = (version) => {
   let result = typeof version === 'string' ? version.replace(/[^0-9.]+/g, '') : '';
@@ -95,9 +93,6 @@ const getSemanticVersion = (version) => {
     case 2:
       result += '.0';
       break;
-    case 3:
-      //
-      break;
     default:
       result = semanticVersion.slice(0, 3).join('.');
       break;
@@ -105,10 +100,11 @@ const getSemanticVersion = (version) => {
   return result;
 };
 const log = (message, type) => {
-  // TODO: Manage other message types i.e. for obj use console.table()
-  message = typeof message === 'string' ? message : '';
-  type = typeof type === 'string' ? type.toLowerCase() : '';
+  type = typeof message === 'string' ? (typeof type === 'string' ? type.toLowerCase() : '') : 'table';
   switch (type) {
+    case 'table':
+      console.table(message);
+      break;
     case 'error':
       console.error('');
       console.error('==============================================================');
@@ -155,7 +151,6 @@ const parseJSON = (input) => {
         json = parts;
         break;
       default:
-        // TODO:
         json = null;
         break;
     }
@@ -163,7 +158,6 @@ const parseJSON = (input) => {
   try {
     json = JSON.parse(json);
   } catch (e) {
-    // TODO:
     json = null;
   }
   return json;
@@ -231,13 +225,12 @@ const writeDirFileSync = (filepath, data, pkgJSON) => {
     if (filename === 'package.json' && pkgJSON) {
       const pkg = JSON.parse(data);
       const merged = _.merge(pkg, pkgJSON);
-      fs.writeFileSync(filepath, JSON.stringify(merged, null, 2),'binary');
+      fs.writeFileSync(filepath, JSON.stringify(merged, null, 2), 'binary');
     } else {
-      // TODO: Check if file is binary and write the data as binary
-      fs.writeFileSync(filepath, data,'binary');
+      fs.writeFileSync(filepath, data, 'binary');
     }
   } catch (e) {
-    // TODO: Handle error
+    log(e, 'error');
   }
 };
 

@@ -10,13 +10,14 @@ const STATE = {
 };
 
 const getTemplateDirectory = (location) => {
-  return fs.readdirSync(location)
-      .map((file) => {
-        return path.join(location, file);
-      })
-      .filter((loc) => {
-        return fs.statSync(loc).isDirectory();
-      });
+  return fs
+    .readdirSync(location)
+    .map((file) => {
+      return path.join(location, file);
+    })
+    .filter((loc) => {
+      return fs.statSync(loc).isDirectory();
+    });
 };
 const getFileDetails = (template, filepath, returnData) => {
   if (typeof template === 'string' && template.length) {
@@ -34,7 +35,6 @@ const getFileDetails = (template, filepath, returnData) => {
         if (returnData) {
           const obj = {};
           const file = path.join(location, directory, filename === '.gitignore' ? '_gitignore' : filename);
-          // TODO: Check if file is binary and write the data as binary
           obj[dir] = fs.readFileSync(file, 'binary').toString();
           return obj;
         } else {
@@ -45,11 +45,11 @@ const getFileDetails = (template, filepath, returnData) => {
         return null;
       }
     } else {
-      // TODO: Location invalid
+      // Location invalid
       return null;
     }
   } else {
-    // TODO: Template invalid
+    // Template invalid
     return null;
   }
 };
@@ -149,11 +149,11 @@ const getTemplateDetails = (template, returnData) => {
       });
       return { data };
     } else {
-      // TODO: Location invalid
+      // Location invalid
       return { data: [] };
     }
   } else {
-    // TODO: Template invalid
+    // Template invalid
     return { data: [] };
   }
 };
@@ -168,11 +168,11 @@ const getTemplateFileDetails = (value, returnData) => {
     if (data) {
       return { data };
     } else {
-      // TODO: Handle invalid
+      // Handle invalid
       return { data: [] };
     }
   } else {
-    // TODO: Path invalid
+    // Path invalid
     return { data: [] };
   }
 };
